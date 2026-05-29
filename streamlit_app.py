@@ -159,8 +159,8 @@ st.markdown(
         max-width: 720px;
         margin: 0;
         color: #ffffff;
-        font-size: clamp(2.4rem, 5vw, 4.6rem);
-        line-height: 1.08;
+        font-size: clamp(2.55rem, 4.6vw, 4.25rem);
+        line-height: 1.14;
         font-weight: 950;
       }
       .hero p {
@@ -766,7 +766,7 @@ st.markdown(
     f"""
     <section class="hero" style="{HERO_BACKGROUND_STYLE}">
       <div class="hero-badge">DART lens · Personal RAG</div>
-      <h1>공시를 읽고, 근거를 묶고, 투자 질문에 답합니다</h1>
+      <h1>공시를 읽고,<br>근거를 묶고,<br>투자 질문에 답합니다</h1>
       <p>관심기업의 사업보고서와 재무제표 요약, 챗봇, 주가 흐름을 한 화면에서 확인하세요.</p>
       {selected_chip}
       <div class="signature-strip">
