@@ -27,6 +27,32 @@ def image_data_uri(path: Path) -> str:
 HERO_IMAGE_URI = image_data_uri(HERO_IMAGE_PATH)
 HERO_BACKGROUND_STYLE = f"background-image: linear-gradient(90deg, rgba(9, 13, 20, 0.94) 0%, rgba(9, 13, 20, 0.72) 46%, rgba(9, 13, 20, 0.28) 100%), url('{HERO_IMAGE_URI}');" if HERO_IMAGE_URI else ""
 
+SAMPLE_SUMMARIES = {
+    "삼성전자": {
+        "overview": "반도체, 모바일, 디스플레이, 가전 사업을 운영하는 글로벌 종합 전자 기업입니다. 최근 공시 기준 핵심 축은 메모리 업황 회복과 AI 서버향 고부가 제품 확대입니다.",
+        "benefit": "수익 구조는 메모리 반도체와 스마트폰 판매가 중심이며, 고대역폭 메모리와 프리미엄 모바일 제품 비중이 수익성 개선에 기여합니다.",
+        "earnings": "최근 실적은 메모리 가격 회복과 재고 정상화 효과로 개선 흐름을 보입니다. 다만 파운드리와 대규모 설비투자 부담은 이익 변동성을 키울 수 있습니다.",
+        "risk": "반도체 가격 사이클, 미중 수출 규제, 경쟁사의 HBM 증설, 환율 변동이 주요 리스크입니다.",
+        "changing": "AI 인프라 수요 증가로 HBM, 첨단 패키징, 서버용 SSD 관련 투자가 확대되는 흐름입니다.",
+        "status": "현금성 자산과 낮은 부채 부담을 감안하면 재무 안정성은 양호한 편입니다.",
+        "anomaly": "단기 주가보다 다음 실적 발표에서 HBM 수주와 메모리 가격 흐름 확인이 중요합니다.",
+    },
+    "SK하이닉스": {
+        "overview": "메모리 반도체에 특화된 기업으로 DRAM, NAND, HBM 제품이 핵심입니다. AI 서버 투자 확대와 함께 HBM 경쟁력이 공시 해석의 중심입니다.",
+        "benefit": "수익 구조는 DRAM과 HBM 판매 비중이 높고, 고부가 서버향 제품이 평균 판매가격과 마진을 끌어올리는 구조입니다.",
+        "earnings": "최근 실적은 AI 서버향 수요 증가와 메모리 업황 회복에 힘입어 개선세입니다. NAND 부문 회복 속도는 추가 확인이 필요합니다.",
+        "risk": "고객사 수요 집중, 증설 경쟁, 메모리 가격 조정, 설비투자 부담이 주요 리스크입니다.",
+        "changing": "HBM 세대 전환과 패키징 역량 확보가 기업 가치 평가의 핵심 변수로 부각되고 있습니다.",
+        "status": "업황 회복 구간에서는 현금흐름 개선이 기대되지만 투자 지출 규모를 함께 봐야 합니다.",
+        "anomaly": "HBM 관련 기대가 이미 주가에 반영된 구간에서는 실적 확인 전 변동성이 커질 수 있습니다.",
+    },
+}
+
+SAMPLE_STOCKS = {
+    "삼성전자": [71400, 71900, 71600, 72400, 72800, 73300, 73100],
+    "SK하이닉스": [188500, 191000, 194500, 193000, 198500, 201000, 204000],
+}
+
 
 st.set_page_config(
     page_title="DART RAG 개인 투자 챗봇",
@@ -127,6 +153,12 @@ st.markdown(
         box-shadow: 0 32px 90px rgba(17, 24, 39, 0.28);
         text-align: left;
       }
+      .hero.compact {
+        min-height: 186px;
+        margin-bottom: 18px;
+        padding: 28px 34px;
+        border-radius: 22px;
+      }
       .hero::after {
         content: "";
         position: absolute;
@@ -163,6 +195,11 @@ st.markdown(
         line-height: 1.14;
         font-weight: 950;
       }
+      .hero.compact h1 {
+        max-width: 760px;
+        font-size: clamp(1.9rem, 3.2vw, 3rem);
+        line-height: 1.12;
+      }
       .hero p {
         position: relative;
         z-index: 1;
@@ -171,6 +208,11 @@ st.markdown(
         color: rgba(255, 255, 255, 0.72);
         font-size: 1.04rem;
         line-height: 1.65;
+      }
+      .hero.compact p {
+        max-width: 760px;
+        margin-top: 12px;
+        font-size: 0.96rem;
       }
       .selected-chip {
         position: relative;
@@ -196,6 +238,9 @@ st.markdown(
         flex-wrap: wrap;
         gap: 10px;
         margin-top: 28px;
+      }
+      .hero.compact .signature-strip {
+        margin-top: 18px;
       }
       .signature-strip span {
         padding: 8px 10px;
@@ -389,6 +434,41 @@ def init_state() -> None:
     st.session_state.setdefault("realtime_stocks", pd.DataFrame(columns=["time", "price"]))
 
 
+def sample_key(company_name: str) -> str | None:
+    compact = company_name.replace(" ", "").lower()
+    if "삼성" in compact or "samsung" in compact:
+        return "삼성전자"
+    if "하이닉스" in compact or "hynix" in compact or "sk하이닉스" in compact:
+        return "SK하이닉스"
+    return None
+
+
+def sample_summary(company_name: str) -> dict[str, str] | None:
+    key = sample_key(company_name)
+    return SAMPLE_SUMMARIES.get(key) if key else None
+
+
+def sample_stock_frame(company_name: str, realtime: bool = False) -> pd.DataFrame:
+    key = sample_key(company_name)
+    if not key:
+        return pd.DataFrame(columns=["time", "price"])
+
+    base_prices = SAMPLE_STOCKS[key]
+    base_times = pd.date_range(end=pd.Timestamp.now().floor("h"), periods=len(base_prices), freq="D")
+    if realtime:
+        offset = len(st.session_state.realtime_stocks) + 1
+        latest = float(base_prices[-1] + offset * (120 if key == "삼성전자" else 650))
+        return pd.DataFrame(
+            [{"time": pd.Timestamp.now().floor("min"), "price": latest}],
+            columns=["time", "price"],
+        )
+
+    return pd.DataFrame(
+        [{"time": time, "price": float(price)} for time, price in zip(base_times, base_prices)],
+        columns=["time", "price"],
+    )
+
+
 def api_url(path: str) -> str:
     base = st.session_state.backend_url.rstrip("/")
     return f"{base}{path}"
@@ -420,7 +500,10 @@ def request_json(method: str, path: str, **kwargs: Any) -> tuple[bool, Any, str]
 def search_companies(query: str) -> None:
     ok, data, error = fetch_companies(query)
     if not ok:
-        st.session_state.dialog_search_results = []
+        sample_candidates = ["삼성전자", "SK하이닉스"]
+        st.session_state.dialog_search_results = [
+            company for company in sample_candidates if query.strip() in company
+        ] or sample_candidates
         st.info("연결중입니다.")
         return
 
@@ -494,8 +577,9 @@ def fetch_summary(company_name: str) -> None:
         json={"name": company_name, "period": st.session_state.selected_period},
     )
     if not ok:
-        st.session_state.summary = None
-        st.session_state.summary_status = "connecting"
+        fallback = sample_summary(company_name)
+        st.session_state.summary = fallback
+        st.session_state.summary_status = "ready" if fallback else "connecting"
         return
     st.session_state.summary = data
     st.session_state.summary_status = "ready"
@@ -514,7 +598,7 @@ def fetch_stocks(path: str, company_name: str) -> pd.DataFrame:
         json={"company": company_name, "period": st.session_state.selected_period},
     )
     if not ok:
-        return pd.DataFrame(columns=["time", "price"])
+        return sample_stock_frame(company_name, realtime=path.endswith("stocks_realtime"))
 
     rows = data.get("stocks", []) if isinstance(data, dict) else data if isinstance(data, list) else []
     parsed_rows = []
@@ -554,7 +638,16 @@ def send_chat(prompt: str, company_name: str) -> None:
         },
     )
     if not ok:
-        st.session_state.messages.append({"role": "assistant", "content": "연결중입니다."})
+        key = sample_key(company_name)
+        if key:
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": f"{key} 샘플 기준으로 보면, 선택 기간({st.session_state.selected_period})에는 공시 요약과 주가 흐름 모두 업황 회복 기대가 반영된 모습입니다. 다만 실제 투자 판단은 백엔드 공시 데이터 연결 후 최신 사업보고서와 재무제표를 함께 확인해야 합니다.",
+                }
+            )
+        else:
+            st.session_state.messages.append({"role": "assistant", "content": "연결중입니다."})
         return
 
     answer = data.get("answer", "답변 필드가 비어 있습니다.") if isinstance(data, dict) else str(data)
@@ -676,6 +769,7 @@ def company_add_dialog() -> None:
         if ok:
             st.session_state.popular_companies = normalize_company_results(data)
         else:
+            st.session_state.popular_companies = ["삼성전자", "SK하이닉스"]
             st.info("연결중입니다.")
 
     st.caption("최근 인기 많은 기업")
@@ -762,28 +856,43 @@ selected_chip = (
     if selected_company
     else ""
 )
+if not selected_company:
+    st.markdown(
+        f"""
+        <section class="hero" style="{HERO_BACKGROUND_STYLE}">
+          <div class="hero-badge">DART lens · Personal RAG</div>
+          <h1>공시를 읽고,<br>근거를 묶고,<br>투자 질문에 답합니다</h1>
+          <p>관심기업의 사업보고서와 재무제표 요약, 챗봇, 주가 흐름을 한 화면에서 확인하세요.</p>
+          <div class="signature-strip">
+            <span>DART filings</span>
+            <span>Financial statements</span>
+            <span>Realtime stock trend</span>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+    button_cols = st.columns([0.36, 0.28, 0.36])
+    if button_cols[1].button("관심기업을 선택하세요", use_container_width=True, type="primary"):
+        company_add_dialog()
+    st.stop()
+
 st.markdown(
     f"""
-    <section class="hero" style="{HERO_BACKGROUND_STYLE}">
-      <div class="hero-badge">DART lens · Personal RAG</div>
-      <h1>공시를 읽고,<br>근거를 묶고,<br>투자 질문에 답합니다</h1>
-      <p>관심기업의 사업보고서와 재무제표 요약, 챗봇, 주가 흐름을 한 화면에서 확인하세요.</p>
+    <section class="hero compact" style="{HERO_BACKGROUND_STYLE}">
+      <div class="hero-badge">DART lens · Active Brief</div>
+      <h1>{selected_company} 공시 브리핑</h1>
+      <p>{st.session_state.selected_period} 기준 재무제표와 사업보고서 요약, 챗봇, 주가 흐름을 압축해서 보여드립니다.</p>
       {selected_chip}
       <div class="signature-strip">
-        <span>DART filings</span>
-        <span>Financial statements</span>
-        <span>Realtime stock trend</span>
+        <span>Disclosure summary</span>
+        <span>AI Q&A</span>
+        <span>Price trend</span>
       </div>
     </section>
     """,
     unsafe_allow_html=True,
 )
-
-if not selected_company:
-    button_cols = st.columns([0.36, 0.28, 0.36])
-    if button_cols[1].button("관심기업을 선택하세요", use_container_width=True, type="primary"):
-        company_add_dialog()
-    st.stop()
 
 summary_heading = st.columns([0.76, 0.24])
 summary_heading[0].markdown(
