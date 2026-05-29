@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -11,6 +13,19 @@ DEFAULT_BACKEND_URL = "http://localhost:8000"
 REQUEST_TIMEOUT = 8
 PERIOD_OPTIONS = ["최근 1주", "최근 1개월", "최근 3개월", "최근 6개월", "최근 1년", "최근 3년", "전체"]
 DEFAULT_PERIOD = "최근 1년"
+APP_DIR = Path(__file__).resolve().parent
+HERO_IMAGE_PATH = APP_DIR / "assets" / "dart-lens-hero.png"
+
+
+def image_data_uri(path: Path) -> str:
+    if not path.exists():
+        return ""
+    encoded = base64.b64encode(path.read_bytes()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
+
+
+HERO_IMAGE_URI = image_data_uri(HERO_IMAGE_PATH)
+HERO_BACKGROUND_STYLE = f"background-image: linear-gradient(90deg, rgba(9, 13, 20, 0.94) 0%, rgba(9, 13, 20, 0.72) 46%, rgba(9, 13, 20, 0.28) 100%), url('{HERO_IMAGE_URI}');" if HERO_IMAGE_URI else ""
 
 
 st.set_page_config(
@@ -31,6 +46,9 @@ st.markdown(
         --dl-soft: #f7faf8;
         --dl-green: #56c56f;
         --dl-green-deep: #20864c;
+        --dl-navy: #111722;
+        --dl-panel: #171f2b;
+        --dl-violet: #7b3ff2;
       }
       .stApp {
         background:
@@ -42,12 +60,12 @@ st.markdown(
       }
       .block-container {
         max-width: 1120px;
-        padding-top: 1.35rem;
+        padding-top: 1rem;
         padding-bottom: 3rem;
       }
       [data-testid="stSidebar"] {
-        background: #fbfcfb;
-        border-right: 1px solid var(--dl-line);
+        background: #101722;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
       }
       [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
         gap: 0.72rem;
@@ -55,6 +73,14 @@ st.markdown(
       h1, h2, h3 {
         color: var(--dl-ink);
         letter-spacing: 0;
+      }
+      [data-testid="stSidebar"] h1,
+      [data-testid="stSidebar"] h2,
+      [data-testid="stSidebar"] h3,
+      [data-testid="stSidebar"] p,
+      [data-testid="stSidebar"] label,
+      [data-testid="stSidebar"] span {
+        color: rgba(255, 255, 255, 0.86);
       }
       .brand-lockup {
         display: flex;
@@ -68,65 +94,117 @@ st.markdown(
         display: grid;
         place-items: center;
         border-radius: 10px;
-        background: #111827;
+        background: linear-gradient(135deg, #56c56f, #22d3ee);
         color: #ffffff;
         font-weight: 900;
+        box-shadow: 0 14px 34px rgba(86, 197, 111, 0.28);
       }
       .brand-name {
         margin: 0;
-        color: var(--dl-ink);
+        color: #ffffff;
         font-size: 1.24rem;
         font-weight: 900;
       }
       .brand-caption {
         margin: 2px 0 0;
-        color: var(--dl-muted);
+        color: rgba(255, 255, 255, 0.58);
         font-size: 0.78rem;
       }
       .hero {
-        padding: 28px 0 26px;
-        text-align: center;
+        position: relative;
+        overflow: hidden;
+        min-height: 430px;
+        margin: 8px 0 28px;
+        padding: 56px 52px;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 28px;
+        background:
+          linear-gradient(90deg, rgba(9, 13, 20, 0.92) 0%, rgba(9, 13, 20, 0.72) 46%, rgba(9, 13, 20, 0.2) 100%),
+          radial-gradient(circle at 16% 22%, rgba(86, 197, 111, 0.28), transparent 32%),
+          #111722;
+        background-position: center;
+        background-size: cover;
+        box-shadow: 0 32px 90px rgba(17, 24, 39, 0.28);
+        text-align: left;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 42px 42px;
+        pointer-events: none;
       }
       .hero-badge {
+        position: relative;
+        z-index: 1;
         display: inline-flex;
         align-items: center;
         gap: 8px;
         margin-bottom: 18px;
         padding: 8px 14px;
-        border: 1px solid rgba(86, 197, 111, 0.55);
+        border: 1px solid rgba(86, 197, 111, 0.5);
         border-radius: 999px;
-        background: rgba(86, 197, 111, 0.12);
-        color: var(--dl-green-deep);
+        background: rgba(86, 197, 111, 0.15);
+        color: #a7f3bd;
         font-weight: 800;
         font-size: 0.86rem;
+        backdrop-filter: blur(14px);
       }
       .hero h1 {
-        max-width: 780px;
-        margin: 0 auto;
-        font-size: clamp(2.4rem, 5vw, 4.8rem);
+        position: relative;
+        z-index: 1;
+        max-width: 720px;
+        margin: 0;
+        color: #ffffff;
+        font-size: clamp(2.4rem, 5vw, 4.6rem);
         line-height: 1.08;
         font-weight: 950;
       }
       .hero p {
-        max-width: 680px;
-        margin: 18px auto 0;
-        color: var(--dl-muted);
+        position: relative;
+        z-index: 1;
+        max-width: 640px;
+        margin: 18px 0 0;
+        color: rgba(255, 255, 255, 0.72);
         font-size: 1.04rem;
         line-height: 1.65;
       }
       .selected-chip {
+        position: relative;
+        z-index: 1;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        margin-top: 18px;
-        padding: 9px 14px;
-        border: 1px solid var(--dl-line);
+        margin-top: 24px;
+        padding: 11px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
         border-radius: 999px;
-        background: #ffffff;
-        box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
-        color: var(--dl-ink);
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 10px 30px rgba(17, 24, 39, 0.14);
+        color: #ffffff;
         font-weight: 800;
         font-size: 0.9rem;
+        backdrop-filter: blur(14px);
+      }
+      .signature-strip {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+      }
+      .signature-strip span {
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.74);
+        font-size: 0.8rem;
+        font-weight: 800;
+        backdrop-filter: blur(14px);
       }
       .section-head {
         display: flex;
@@ -199,11 +277,21 @@ st.markdown(
       }
       [data-testid="stSidebar"] .stButton > button {
         min-height: 44px;
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
       }
       [data-testid="stSidebar"] [data-testid="baseButton-primary"] {
         background: var(--dl-green) !important;
         color: #ffffff !important;
+      }
+      [data-testid="stSidebar"] [data-testid="stSelectbox"] {
+        border-radius: 14px;
+      }
+      [data-testid="stSidebar"] [data-baseweb="select"] > div {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
       }
       [data-testid="stMetric"] {
         padding: 18px;
@@ -225,6 +313,42 @@ st.markdown(
       [data-testid="stExpander"] {
         border-radius: 14px;
         border-color: var(--dl-line);
+      }
+      div[role="dialog"] {
+        border-radius: 28px !important;
+        background: linear-gradient(180deg, #101722 0%, #161f2d 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 34px 100px rgba(0, 0, 0, 0.38) !important;
+      }
+      div[role="dialog"] h2,
+      div[role="dialog"] h3,
+      div[role="dialog"] p,
+      div[role="dialog"] label,
+      div[role="dialog"] span {
+        color: rgba(255, 255, 255, 0.88);
+      }
+      div[role="dialog"] .stButton > button {
+        min-height: 42px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+      }
+      .radar-panel {
+        margin: -6px 0 14px;
+        padding: 16px;
+        border: 1px solid rgba(86, 197, 111, 0.28);
+        border-radius: 20px;
+        background:
+          radial-gradient(circle at 86% 10%, rgba(34, 211, 238, 0.2), transparent 30%),
+          rgba(255, 255, 255, 0.06);
+      }
+      .radar-panel h3 {
+        margin: 0;
+        color: #ffffff;
+      }
+      .radar-panel p {
+        margin: 6px 0 0;
+        color: rgba(255, 255, 255, 0.62);
       }
       @media (max-width: 720px) {
         .hero {
@@ -538,6 +662,15 @@ def render_summary(summary: dict[str, Any] | None) -> None:
 
 @st.dialog("관심기업 추가")
 def company_add_dialog() -> None:
+    st.markdown(
+        """
+        <div class="radar-panel">
+          <h3>Market Radar</h3>
+          <p>DART lens가 최근 많이 찾는 기업과 검색 결과를 관심기업 후보로 정리합니다.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     if not st.session_state.popular_companies:
         ok, data, error = fetch_companies()
         if ok:
@@ -631,11 +764,16 @@ selected_chip = (
 )
 st.markdown(
     f"""
-    <section class="hero">
+    <section class="hero" style="{HERO_BACKGROUND_STYLE}">
       <div class="hero-badge">DART lens · Personal RAG</div>
       <h1>공시를 읽고, 근거를 묶고, 투자 질문에 답합니다</h1>
       <p>관심기업의 사업보고서와 재무제표 요약, 챗봇, 주가 흐름을 한 화면에서 확인하세요.</p>
       {selected_chip}
+      <div class="signature-strip">
+        <span>DART filings</span>
+        <span>Financial statements</span>
+        <span>Realtime stock trend</span>
+      </div>
     </section>
     """,
     unsafe_allow_html=True,
