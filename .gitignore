@@ -1,0 +1,39 @@
+# Environment & secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data artifacts (generated at runtime)
+finance.db
+faiss_index/
+docs_cache/
+chroma_db/
+
+# Evaluation outputs
+evaluate_result.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scratch / temp
+scratch/

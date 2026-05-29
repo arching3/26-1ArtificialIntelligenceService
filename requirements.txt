@@ -1,0 +1,17 @@
+streamlit
+python-dotenv
+openai
+langchain
+langchain-openai
+langchain-community==0.3.31
+langchain-text-splitters
+faiss-cpu
+OpenDartReader
+beautifulsoup4
+lxml
+tiktoken
+ragas
+datasets
+pandas
+tenacity
+requests
