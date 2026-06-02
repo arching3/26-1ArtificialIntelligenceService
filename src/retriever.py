@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from typing import Dict, Iterable, List, Optional
 
@@ -7,8 +8,11 @@ from langchain_core.documents import Document
 
 from .query_router import route_query
 from .config import EVENT_INDEX, REGULAR_INDEX
-from .finance_store import get_chunks_by_ids
+from .finance_store import get_active_chunks, get_chunks_by_ids
 from .index_manager import search_chunk_ids
+
+
+logger = logging.getLogger(__name__)
 
 
 def index_types_for_query(query_info: Dict) -> List[str]:
@@ -102,6 +106,7 @@ def retrieve_context_documents(
     routed_codes = query_info.get("company_codes") or []
     codes = list(routed_codes or stock_codes or [])
     if not codes:
+        logger.info("retrieve_skipped_no_stock_codes intent=%s", query_info.get("intent"))
         return {"query_info": query_info, "documents": [], "missing_indexes": []}
 
     index_types = index_types_for_query(query_info)
@@ -109,18 +114,28 @@ def retrieve_context_documents(
     search_k = k * 4 if intent in {"risk_analysis", "financial_numeric", "comparison", "event_disclosure"} else k
     chunk_ids: List[int] = []
     missing_indexes = []
+    logger.info("retrieve_start intent=%s stock_codes=%s index_types=%s k=%s search_k=%s", intent, codes, index_types, k, search_k)
     for stock_code in codes:
         for index_type in index_types:
+            if not get_active_chunks(stock_code, index_type):
+                missing_indexes.append(f"No active chunks: {stock_code}/{index_type}")
+                logger.warning("retrieve_missing_active_chunks stock_code=%s index_type=%s", stock_code, index_type)
+                continue
             try:
                 for chunk_id in search_chunk_ids(stock_code, index_type, query, k=search_k):
                     if chunk_id not in chunk_ids:
                         chunk_ids.append(chunk_id)
             except FileNotFoundError as exc:
                 missing_indexes.append(str(exc))
+                logger.warning("retrieve_missing_index stock_code=%s index_type=%s error=%s", stock_code, index_type, exc)
+            except Exception:
+                logger.exception("retrieve_search_failed stock_code=%s index_type=%s", stock_code, index_type)
+                raise
 
     chunks = get_chunks_by_ids(chunk_ids)
     documents = [_chunk_to_document(chunk) for chunk in chunks]
     documents = _sort_documents_for_query(documents, query, query_info, k)
+    logger.info("retrieve_complete intent=%s chunk_ids=%s document_count=%s missing_indexes=%s", intent, len(chunk_ids), len(documents), missing_indexes)
     return {
         "query_info": query_info,
         "documents": documents,

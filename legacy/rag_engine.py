@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import Iterable, List, Optional
 
 from dotenv import load_dotenv
@@ -12,6 +13,7 @@ from finance_store import compare_metric, get_financials, get_recent_events
 from query_router import COMPANY_ALIASES, route_query
 
 
+logging.getLogger("dotenv.main").setLevel(logging.ERROR)
 load_dotenv()
 
 RETRIEVER_K = 8
@@ -310,7 +312,7 @@ class HybridRAGChain:
 
 
 def create_rag_chain(
-    model_name: str = "gpt-5.4",
+    model_name: str = "gpt-4o-mini",
     company_codes: Optional[List[str]] = None,
     company_code: Optional[str] = None,
 ):

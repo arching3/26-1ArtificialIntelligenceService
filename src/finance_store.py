@@ -194,6 +194,59 @@ def upsert_company(stock_code: str, corp_name: str = "", corp_code: str = "") ->
         )
 
 
+def list_companies() -> List[Dict[str, Any]]:
+    init_db()
+    with _connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT stock_code, corp_code, corp_name, updated_at
+            FROM companies
+            ORDER BY corp_name, stock_code
+            """
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def find_companies_by_name(query: str) -> List[Dict[str, Any]]:
+    init_db()
+    normalized_query = str(query or "").strip()
+    if not normalized_query:
+        return list_companies()
+
+    compact_query = "".join(normalized_query.split())
+    with _connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT stock_code, corp_code, corp_name, updated_at
+            FROM companies
+            WHERE stock_code = ?
+               OR corp_name = ?
+               OR REPLACE(corp_name, ' ', '') = ?
+               OR corp_name LIKE ?
+            ORDER BY
+                CASE
+                    WHEN stock_code = ? THEN 0
+                    WHEN corp_name = ? THEN 1
+                    WHEN REPLACE(corp_name, ' ', '') = ? THEN 2
+                    ELSE 3
+                END,
+                LENGTH(corp_name),
+                corp_name
+            LIMIT 20
+            """,
+            (
+                normalized_query.zfill(6) if normalized_query.isdigit() else normalized_query,
+                normalized_query,
+                compact_query,
+                f"%{normalized_query}%",
+                normalized_query.zfill(6) if normalized_query.isdigit() else normalized_query,
+                normalized_query,
+                compact_query,
+            ),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
 def upsert_filing(filing: Dict[str, Any]) -> None:
     init_db()
     receipt_no = str(filing.get("receipt_no") or "").strip()
@@ -461,6 +514,30 @@ def get_chunks_by_ids(chunk_ids: Iterable[int]) -> List[Dict[str, Any]]:
     return [by_id[chunk_id] for chunk_id in ids if chunk_id in by_id]
 
 
+def get_latest_chunks(stock_code: str, index_type: Optional[str] = None, data_type: Optional[str] = None, limit: int = 8) -> List[Dict[str, Any]]:
+    init_db()
+    params: List[Any] = [stock_code]
+    where = "WHERE stock_code = ? AND active = 1"
+    if index_type:
+        where += " AND index_type = ?"
+        params.append(index_type)
+    if data_type:
+        where += " AND data_type = ?"
+        params.append(data_type)
+    params.append(limit)
+    with _connect() as conn:
+        rows = conn.execute(
+            f"""
+            SELECT * FROM chunks
+            {where}
+            ORDER BY updated_at DESC, id DESC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+    return [_inflate_chunk(row) for row in rows]
+
+
 def replace_faiss_mappings(stock_code: str, index_type: str, vector_to_chunk: Iterable[tuple[int, int]]) -> None:
     init_db()
     now = _now()
@@ -528,6 +605,35 @@ def get_recent_events(stock_code: str, event_type: Optional[str] = None, limit: 
             params,
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def list_filings(stock_code: str, index_type: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+    init_db()
+    params: List[Any] = [stock_code]
+    where = "WHERE stock_code = ?"
+    if index_type:
+        where += " AND index_type = ?"
+        params.append(index_type)
+    params.append(limit)
+    with _connect() as conn:
+        rows = conn.execute(
+            f"""
+            SELECT *
+            FROM filings
+            {where}
+            ORDER BY receipt_date DESC, updated_at DESC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_filing(receipt_no: str) -> Optional[Dict[str, Any]]:
+    init_db()
+    with _connect() as conn:
+        row = conn.execute("SELECT * FROM filings WHERE receipt_no = ?", (receipt_no,)).fetchone()
+    return dict(row) if row else None
 
 
 def _inflate_chunk(row: sqlite3.Row) -> Dict[str, Any]:

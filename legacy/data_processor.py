@@ -13,7 +13,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from dotenv import load_dotenv
-from opendartreader import OpenDartReader
+import OpenDartReader
 from tenacity import (
     before_sleep_log,
     retry,
@@ -28,6 +28,7 @@ except ImportError:
     from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
+logging.getLogger("dotenv.main").setLevel(logging.ERROR)
 load_dotenv()
 
 REPORT_CODE_ANNUAL = "11011"

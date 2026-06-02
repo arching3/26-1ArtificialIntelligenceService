@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
-from opendartreader import OpenDartReader
+import OpenDartReader
 
 from data_processor import (
     DartProcessingError,
@@ -20,6 +20,7 @@ from event_processor import EVENT_LOOKBACK_DAYS, process_event_disclosures
 from finance_store import init_db, upsert_company, upsert_event_disclosure, upsert_financials
 
 
+logging.getLogger("dotenv.main").setLevel(logging.ERROR)
 load_dotenv()
 
 FAISS_INDEX_DIR = "./faiss_index"

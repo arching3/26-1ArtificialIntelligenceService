@@ -14,7 +14,7 @@ import pandas as pd
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI
-from opendartreader import OpenDartReader
+import OpenDartReader
 
 try:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 EVENT_LOOKBACK_DAYS = 365
 EVENT_CHUNK_SIZE = 2500
 EVENT_CHUNK_OVERLAP = 200
-EXTRACTION_MODEL = "gpt-5.4-mini"
+EXTRACTION_MODEL = "gpt-4o-mini"
 
 _EXTRACTION_PROMPT = """
 다음은 DART 수시공시 원문입니다. 이 공시에서 아래 정보를 추출하세요.
@@ -422,7 +422,7 @@ def _extract_relevant_sections(raw_text: str, max_chars: int = 5000) -> str:
 
 
 def _extract_target_detail(raw_text: str) -> str:
-    """Use gpt-5.4-mini to extract target company details from event raw text."""
+    """Use gpt-4o-mini to extract target company details from event raw text."""
     if not raw_text or len(raw_text) < 50:
         return ""
     try:
