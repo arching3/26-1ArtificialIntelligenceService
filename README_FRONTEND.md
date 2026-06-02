@@ -6,6 +6,12 @@
 
 ```bash
 pip install -r requirements.txt
+python api_server.py
+```
+
+다른 터미널에서:
+
+```bash
 streamlit run streamlit_app.py
 ```
 
@@ -32,3 +38,10 @@ http://127.0.0.1:8501
 ```bash
 uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload
 ```
+## 로컬 연결 테스트
+
+`api_server.py`는 프론트엔드가 기대하는 `/api/...` 엔드포인트를 제공하는 경량 로컬 어댑터입니다.
+
+- 기본 API 주소: `http://127.0.0.1:8000`
+- 기본 프론트 주소: `http://127.0.0.1:8501`
+- DART/OpenAI/FAISS 연결이 준비되어 있지 않아도 삼성전자, SK하이닉스 샘플 데이터로 화면을 확인할 수 있습니다.
