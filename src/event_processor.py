@@ -7,9 +7,9 @@ import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from opendartreader import OpenDartReader
+import OpenDartReader
 
-from event_processor import (
+from .event_helpers import (
     EVENT_KEYWORDS,
     EVENT_TYPE_BY_KEYWORD,
     _clean_event_text,

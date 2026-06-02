@@ -25,13 +25,19 @@ http://127.0.0.1:8501
 
 - `GET /api/health`
 - `GET /api/companies/search`
-- `POST /api/companies/{companies_name}/summary`
+- `POST /api/companies/list`
+- `POST /api/companies/{company_name}/summary`
 - `POST /api/chat`
 - `POST /api/companies/stocks`
 - `POST /api/companies/stocks_realtime`
 
 왼쪽 사이드바에서 Backend URL을 바꾸면 다른 백엔드 서버에 연결할 수 있습니다.
 
+백엔드 실행 예:
+
+```bash
+uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload
+```
 ## 로컬 연결 테스트
 
 `api_server.py`는 프론트엔드가 기대하는 `/api/...` 엔드포인트를 제공하는 경량 로컬 어댑터입니다.

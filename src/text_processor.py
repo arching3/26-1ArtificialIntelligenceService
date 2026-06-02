@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from langchain_core.documents import Document
 
-from data_processor import (
+from .data_processor import (
     _chunk_text,
     _clean_text,
     _extract_business_section,
@@ -263,4 +263,3 @@ def build_regular_chunk_records(
 
 def documents_from_chunk_records(records: List[Dict[str, Any]]) -> List[Document]:
     return [Document(page_content=record["content"], metadata=record.get("metadata") or {}) for record in records]
-

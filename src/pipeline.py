@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict, List
 
 from dotenv import load_dotenv
-from opendartreader import OpenDartReader
+import OpenDartReader
 
 from .config import EVENT_INDEX, REGULAR_INDEX
 from .dart_collector import collect_recent_regular_filings, normalize_stock_code, save_cleaned_text
@@ -19,6 +19,7 @@ from .finance_store import (
     upsert_financials,
 )
 from .index_manager import rebuild_index
+from .logging_config import configure_logging
 from .text_processor import (
     build_regular_chunk_records,
     chunk_business_text,
@@ -27,7 +28,9 @@ from .text_processor import (
     extract_financial_data,
 )
 
+logging.getLogger("dotenv.main").setLevel(logging.ERROR)
 load_dotenv()
+configure_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -44,6 +47,7 @@ def _dart_client() -> OpenDartReader:
 
 def rebuild_regular_index(stock_code: str, dart: OpenDartReader | None = None) -> Dict[str, Any]:
     stock_code = normalize_stock_code(stock_code)
+    logger.info("[%s] regular index rebuild started", stock_code)
     dart = dart or _dart_client()
     result = collect_recent_regular_filings(dart, stock_code)
     filings = result["filings"]
@@ -106,6 +110,14 @@ def rebuild_regular_index(stock_code: str, dart: OpenDartReader | None = None) -
     chunk_ids = insert_chunks(stock_code, REGULAR_INDEX, chunk_records)
     index_result = rebuild_index(stock_code, REGULAR_INDEX)
     pruned_chunks = prune_inactive_chunks(stock_code, REGULAR_INDEX)
+    logger.info(
+        "[%s] regular index rebuild complete filings=%s chunks=%s pruned=%s failed=%s",
+        stock_code,
+        len(filings),
+        len(chunk_ids),
+        pruned_chunks,
+        len(failed_list),
+    )
 
     return {
         "stock_code": stock_code,
@@ -122,6 +134,7 @@ def rebuild_regular_index(stock_code: str, dart: OpenDartReader | None = None) -
 
 def rebuild_event_index(stock_code: str, dart: OpenDartReader | None = None) -> Dict[str, Any]:
     stock_code = normalize_stock_code(stock_code)
+    logger.info("[%s] event index rebuild started", stock_code)
     dart = dart or _dart_client()
     result = collect_event_filings(dart, stock_code)
 
@@ -138,6 +151,15 @@ def rebuild_event_index(stock_code: str, dart: OpenDartReader | None = None) -> 
         pruned_chunks = prune_inactive_chunks(stock_code, EVENT_INDEX)
     else:
         pruned_chunks = 0
+    logger.info(
+        "[%s] event index rebuild complete filings=%s events=%s chunks=%s pruned=%s failed=%s",
+        stock_code,
+        len(result["filings"]),
+        len(result["events"]),
+        len(chunk_ids),
+        pruned_chunks,
+        len(result["failed_list"]),
+    )
 
     return {
         "stock_code": stock_code,
@@ -157,6 +179,12 @@ def rebuild_company_indexes(
     include_event: bool = True,
 ) -> Dict[str, Any]:
     stock_code = normalize_stock_code(stock_code)
+    logger.info(
+        "[%s] company index rebuild started include_regular=%s include_event=%s",
+        stock_code,
+        include_regular,
+        include_event,
+    )
     _required_env("OPENAI_API_KEY")
     dart = _dart_client()
     results: Dict[str, Any] = {"stock_code": stock_code, "regular": None, "event": None}
@@ -165,6 +193,7 @@ def rebuild_company_indexes(
         results["regular"] = rebuild_regular_index(stock_code, dart=dart)
     if include_event:
         results["event"] = rebuild_event_index(stock_code, dart=dart)
+    logger.info("[%s] company index rebuild complete", stock_code)
     return results
 
 

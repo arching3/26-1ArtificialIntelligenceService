@@ -1,5 +1,6 @@
 # Environment & secrets
 .env
+.env.txt
 
 # Python
 __pycache__/
@@ -30,6 +31,9 @@ chroma_db/
 
 # Evaluation outputs
 evaluate_result.csv
+
+# Runtime logs
+logs/
 
 # OS
 .DS_Store

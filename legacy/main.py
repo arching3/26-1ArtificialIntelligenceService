@@ -4,6 +4,7 @@ import traceback
 
 from dotenv import load_dotenv
 
+logging.getLogger("dotenv.main").setLevel(logging.ERROR)
 load_dotenv()
 
 import streamlit as st
@@ -112,7 +113,7 @@ with st.sidebar:
         labels = st.session_state.get("loaded_company_labels") or st.session_state["loaded_company_codes"]
         for label in labels:
             st.text(f"  • {label}")
-        st.caption(f"LLM: gpt-5.4")
+        st.caption(f"LLM: gpt-4o-mini")
 
 st.title("📊 DART 기업 공시 분석 챗봇")
 

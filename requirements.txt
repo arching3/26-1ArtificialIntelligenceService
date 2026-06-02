@@ -1,4 +1,6 @@
 streamlit
+fastapi
+uvicorn[standard]
 python-dotenv
 openai
 langchain
@@ -13,5 +15,6 @@ tiktoken
 ragas
 datasets
 pandas
+yfinance
 tenacity
 requests

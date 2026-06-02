@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pandas as pd
-from opendartreader import OpenDartReader
+import OpenDartReader
 
 from .config import REGULAR_INDEX, REGULAR_LOOKBACK_DAYS, cleaned_dir, raw_dir
 
