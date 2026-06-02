@@ -11,6 +11,7 @@ import streamlit as st
 
 DEFAULT_BACKEND_URL = "http://localhost:8000"
 REQUEST_TIMEOUT = 8
+CHAT_REQUEST_TIMEOUT = 60
 PERIOD_OPTIONS = ["최근 1주", "최근 1개월", "최근 3개월", "최근 6개월", "최근 1년", "최근 3년", "전체"]
 DEFAULT_PERIOD = "최근 1년"
 APP_DIR = Path(__file__).resolve().parent
@@ -428,6 +429,8 @@ def init_state() -> None:
     st.session_state.setdefault("dialog_search_results", [])
     st.session_state.setdefault("summary", None)
     st.session_state.setdefault("summary_status", "idle")
+    st.session_state.setdefault("index_status", {})
+    st.session_state.setdefault("index_company", "")
     st.session_state.setdefault("messages", [])
     st.session_state.setdefault("stock_company", "")
     st.session_state.setdefault("weekly_stocks", pd.DataFrame(columns=["time", "price"]))
@@ -474,12 +477,12 @@ def api_url(path: str) -> str:
     return f"{base}{path}"
 
 
-def request_json(method: str, path: str, **kwargs: Any) -> tuple[bool, Any, str]:
+def request_json(method: str, path: str, timeout: int = REQUEST_TIMEOUT, **kwargs: Any) -> tuple[bool, Any, str]:
     try:
         response = requests.request(
             method,
             api_url(path),
-            timeout=REQUEST_TIMEOUT,
+            timeout=timeout,
             **kwargs,
         )
     except requests.RequestException as exc:
@@ -557,19 +560,96 @@ def add_company(company_name: str) -> None:
 def select_company(company_name: str) -> None:
     st.session_state.selected_company = company_name
     st.session_state.messages = []
+    start_initial_work(company_name)
     fetch_summary(company_name)
     fetch_initial_stocks(company_name)
 
 
 def sync_watchlist() -> None:
-    request_json(
+    ok, data, error = request_json(
         "POST",
         "/api/companies/list",
         json={"companies": st.session_state.watchlist},
     )
+    if ok and isinstance(data, dict) and data.get("index_jobs"):
+        latest_job = data["index_jobs"][-1]
+        st.session_state.index_status = latest_job
+        st.session_state.index_company = latest_job.get("corp_name") or latest_job.get("stock_code") or ""
+
+
+def start_initial_work(company_name: str) -> None:
+    ok, data, error = request_json("POST", f"/api/companies/{company_name}/index")
+    if not ok or not isinstance(data, dict):
+        st.session_state.index_status = {"status": "unknown", "error": error}
+        st.session_state.index_company = company_name
+        return
+    st.session_state.index_status = data
+    st.session_state.index_company = company_name
+
+
+def fetch_index_status(company_name: str) -> dict[str, Any]:
+    ok, data, error = request_json("GET", f"/api/companies/{company_name}/index-status")
+    if not ok or not isinstance(data, dict):
+        data = {"status": "unknown", "error": error}
+    st.session_state.index_status = data
+    st.session_state.index_company = company_name
+    return data
+
+
+def index_progress_value(status: str) -> int:
+    if status == "queued":
+        return 12
+    if status == "indexing":
+        return 58
+    if status == "ready":
+        return 100
+    if status == "failed":
+        return 100
+    return 0
+
+
+def render_index_progress(company_name: str) -> None:
+    status = st.session_state.index_status if st.session_state.index_company == company_name else {}
+    state = str(status.get("status") or "")
+    if state not in {"queued", "indexing", "failed"}:
+        return
+
+    progress = index_progress_value(state)
+    if state == "failed":
+        error = status.get("error") or "공시 인덱싱 작업이 실패했습니다."
+        st.error(f"공시 인덱싱 실패: {error}")
+        return
+
+    label = "대기 중" if state == "queued" else "진행중..."
+    st.caption(f"공시 인덱싱 {label}")
+    st.progress(progress, text=f"{company_name} 공시 원문 수집 및 인덱스 생성 {label}")
+
+
+@st.fragment(run_every=5)
+def monitor_initial_work(company_name: str) -> None:
+    status = st.session_state.index_status if st.session_state.index_company == company_name else {}
+    if status.get("status") not in {"queued", "indexing"}:
+        return
+
+    latest = fetch_index_status(company_name)
+    if latest.get("status") == "ready":
+        fetch_summary(company_name)
+        st.rerun()
+    if latest.get("status") == "failed":
+        st.rerun()
 
 
 def fetch_summary(company_name: str) -> None:
+    status = st.session_state.index_status if st.session_state.index_company == company_name else {}
+    if status.get("status") in {"queued", "indexing"}:
+        st.session_state.summary = None
+        st.session_state.summary_status = "indexing"
+        return
+    if status.get("status") == "failed":
+        st.session_state.summary = None
+        st.session_state.summary_status = "failed"
+        return
+
     st.session_state.summary_status = "loading"
     ok, data, error = request_json(
         "POST",
@@ -628,29 +708,30 @@ def parse_datetime(value: Any) -> pd.Timestamp:
 
 def send_chat(prompt: str, company_name: str) -> None:
     st.session_state.messages.append({"role": "user", "content": prompt})
-    ok, data, error = request_json(
-        "POST",
-        "/api/chat",
-        json={
-            "prompt": prompt,
-            "company": company_name,
-            "period": st.session_state.selected_period,
-        },
-    )
-    if not ok:
-        key = sample_key(company_name)
-        if key:
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": f"{key} 샘플 기준으로 보면, 선택 기간({st.session_state.selected_period})에는 공시 요약과 주가 흐름 모두 업황 회복 기대가 반영된 모습입니다. 다만 실제 투자 판단은 백엔드 공시 데이터 연결 후 최신 사업보고서와 재무제표를 함께 확인해야 합니다.",
-                }
-            )
-        else:
-            st.session_state.messages.append({"role": "assistant", "content": "연결중입니다."})
-        return
+    with st.chat_message("user"):
+        st.write(prompt)
 
-    answer = data.get("answer", "답변 필드가 비어 있습니다.") if isinstance(data, dict) else str(data)
+    with st.chat_message("assistant"):
+        with st.spinner("답변 생성 중..."):
+            ok, data, error = request_json(
+                "POST",
+                "/api/chat",
+                timeout=CHAT_REQUEST_TIMEOUT,
+                json={
+                    "prompt": prompt,
+                    "company": company_name,
+                    "period": st.session_state.selected_period,
+                },
+            )
+        if not ok:
+            key = sample_key(company_name)
+            if key:
+                answer = f"{key} 샘플 기준으로 보면, 선택 기간({st.session_state.selected_period})에는 공시 요약과 주가 흐름 모두 업황 회복 기대가 반영된 모습입니다. 다만 실제 투자 판단은 백엔드 공시 데이터 연결 후 최신 사업보고서와 재무제표를 함께 확인해야 합니다."
+            else:
+                answer = "연결중입니다."
+        else:
+            answer = data.get("answer", "답변 필드가 비어 있습니다.") if isinstance(data, dict) else str(data)
+        st.write(answer)
     st.session_state.messages.append({"role": "assistant", "content": answer})
 
 
@@ -728,6 +809,12 @@ def render_summary(summary: dict[str, Any] | None) -> None:
 
     if st.session_state.summary_status == "connecting":
         st.info("연결중입니다.")
+        return
+    if st.session_state.summary_status == "indexing":
+        st.info("공시 인덱싱이 완료되면 요약을 불러옵니다.")
+        return
+    if st.session_state.summary_status == "failed":
+        st.info("공시 인덱싱 상태를 확인해 주세요.")
         return
 
     if not summary:
@@ -907,8 +994,11 @@ summary_heading[0].markdown(
     unsafe_allow_html=True,
 )
 if summary_heading[1].button("요약 새로고침", use_container_width=True):
+    start_initial_work(selected_company)
     fetch_summary(selected_company)
 
+monitor_initial_work(selected_company)
+render_index_progress(selected_company)
 render_summary(st.session_state.summary)
 
 st.divider()
@@ -938,7 +1028,6 @@ with st.form("chat-form", clear_on_submit=True):
 
 if submitted and prompt.strip():
     send_chat(prompt.strip(), selected_company)
-    st.rerun()
 
 st.divider()
 if st.session_state.stock_company != selected_company:
