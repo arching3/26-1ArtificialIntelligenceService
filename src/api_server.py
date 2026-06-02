@@ -140,8 +140,8 @@ def get_watchlist() -> dict[str, Any]:
 
 
 @app.post("/api/me/watchlist")
-def post_watchlist(payload: WatchlistPayload) -> dict[str, Any]:
-    return set_watchlist(payload)
+def post_watchlist(payload: WatchlistPayload, background_tasks: BackgroundTasks) -> dict[str, Any]:
+    return _set_watchlist(payload, background_tasks)
 
 
 @app.delete("/api/me/watchlist/{company_value}")
@@ -164,16 +164,33 @@ def companies_search(query: str = Query(default="")) -> dict[str, Any]:
 
 
 @app.post("/api/companies/list")
-def set_watchlist(payload: WatchlistPayload) -> dict[str, Any]:
+def set_watchlist(payload: WatchlistPayload, background_tasks: BackgroundTasks) -> dict[str, Any]:
+    return _set_watchlist(payload, background_tasks)
+
+
+def _set_watchlist(payload: WatchlistPayload, background_tasks: BackgroundTasks) -> dict[str, Any]:
     global _watchlist
     _watchlist = list(dict.fromkeys(payload.companies))
     logger.info("watchlist_set size=%s companies=%s", len(_watchlist), _watchlist)
-    return {"ok": True, "companies": _watchlist}
+    index_jobs = []
+    for company_value in _watchlist:
+        company = resolve_company(company_value)
+        if not company:
+            logger.warning("watchlist_index_skip_unresolved value=%r", company_value)
+            continue
+        index_result = _queue_index_job(company, background_tasks)
+        if index_result["status"] in {"queued", "indexing"}:
+            index_jobs.append(index_result)
+    return {"ok": True, "companies": _watchlist, "index_jobs": index_jobs}
 
 
 @app.post("/api/companies/{company_value}/index")
 def start_index(company_value: str, background_tasks: BackgroundTasks) -> dict[str, Any]:
     company = _require_company(company_value)
+    return _queue_index_job(company, background_tasks)
+
+
+def _queue_index_job(company: Company, background_tasks: BackgroundTasks) -> dict[str, Any]:
     current = _current_index_status(company.stock_code)
     if current["status"] == "ready":
         logger.info("index_request_already_ready stock_code=%s company=%s", company.stock_code, company.corp_name)
