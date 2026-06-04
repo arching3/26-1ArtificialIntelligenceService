@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DART RAG 개인 투자 챗봇</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="기업과 공시 목록">
+        <div class="brand">
+          <div class="brand-mark">D</div>
+          <div>
+            <p class="eyebrow">Personal RAG</p>
+            <h1>DART Lens</h1>
+          </div>
+        </div>
+
+        <label class="search-box">
+          <span>검색</span>
+          <input id="companySearch" type="search" placeholder="기업명, 종목코드, 보고서" />
+        </label>
+
+        <div class="sync-panel">
+          <div>
+            <p class="eyebrow">공시 업데이트</p>
+            <strong id="syncStatus">10분 전 동기화</strong>
+          </div>
+          <button id="syncButton" class="icon-button" type="button" aria-label="DART 공시 새로고침" title="DART 공시 새로고침">
+            <span aria-hidden="true">↻</span>
+          </button>
+        </div>
+
+        <nav class="company-list" id="companyList" aria-label="관심 기업"></nav>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">요약 대상</p>
+            <h2 id="selectedCompanyName">삼성전자</h2>
+          </div>
+          <div class="topbar-actions">
+            <button class="segmented active" type="button" data-mode="summary">요약</button>
+            <button class="segmented" type="button" data-mode="risk">리스크</button>
+            <button class="segmented" type="button" data-mode="advice">조언</button>
+          </div>
+        </header>
+
+        <section class="overview-grid" aria-label="기업 재무 요약">
+          <article class="metric-card">
+            <p>매출액</p>
+            <strong id="revenueMetric">258.9조</strong>
+            <span id="revenueDelta">전년 대비 +14.3%</span>
+          </article>
+          <article class="metric-card">
+            <p>영업이익</p>
+            <strong id="profitMetric">32.7조</strong>
+            <span id="profitDelta">마진 12.6%</span>
+          </article>
+          <article class="metric-card">
+            <p>부채비율</p>
+            <strong id="debtMetric">27.8%</strong>
+            <span id="debtDelta">안정 구간</span>
+          </article>
+          <article class="metric-card accent">
+            <p>투자 신호</p>
+            <strong id="signalMetric">관망</strong>
+            <span id="signalDelta">근거 4개 문서</span>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <section class="panel disclosure-panel" aria-label="최신 공시와 출처">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">RAG Sources</p>
+                <h3>최신 공시</h3>
+              </div>
+              <button id="filterToggle" class="ghost-button" type="button">사업보고서</button>
+            </div>
+            <div id="filingList" class="filing-list"></div>
+          </section>
+
+          <section class="panel analysis-panel" aria-label="문서 요약">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Generated Brief</p>
+                <h3>재무제표와 사업보고서 요약</h3>
+              </div>
+              <span class="confidence" id="confidenceLabel">근거 일치 86%</span>
+            </div>
+            <div class="brief" id="briefContent"></div>
+          </section>
+        </section>
+
+        <section class="chat-panel" aria-label="개인형 챗봇">
+          <div class="chat-header">
+            <div>
+              <p class="eyebrow">Ask with Citations</p>
+              <h3>투자 분석 챗봇</h3>
+            </div>
+            <div class="model-badge">DART RAG · 개인 워치리스트</div>
+          </div>
+
+          <div class="quick-prompts" id="quickPrompts" aria-label="빠른 질문"></div>
+          <div class="messages" id="messages" aria-live="polite"></div>
+
+          <form class="composer" id="chatForm">
+            <input id="chatInput" type="text" autocomplete="off" placeholder="예: 최근 사업보고서 기준으로 매수해도 될까?" />
+            <button type="submit">전송</button>
+          </form>
+          <p class="fine-print">투자 판단의 최종 책임은 사용자에게 있으며, 이 화면은 공시 기반 분석 보조용입니다.</p>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
