@@ -1,0 +1,6 @@
+﻿index,company_code,company_name,question_type,question,faithfulness,context_recall
+1,005930,삼성전자,business_overview,삼성전자의 주요 사업 부문은 무엇인가요?,0.833333,1.0
+2,005930,삼성전자,product_service,삼성전자의 DX 부문은 어떤 제품을 다루나요?,1.0,1.0
+3,005930,삼성전자,product_service,삼성전자의 DS 부문에서 대표적인 제품은 무엇인가요?,1.0,1.0
+4,005930,삼성전자,business_overview,삼성전자 사업에서 SDC와 Harman은 어떤 역할을 하나요?,0.615385,1.0
+5,005930,삼성전자,business_overview,삼성전자의 주요 지역 운영 구조는 어떻게 설명할 수 있나요?,1.0,1.0

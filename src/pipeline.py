@@ -20,6 +20,7 @@ from .finance_store import (
 )
 from .index_manager import rebuild_index
 from .logging_config import configure_logging
+from .filing_parser import chunk_business_sections, extract_business_sections, parse_filing_document
 from .text_processor import (
     build_regular_chunk_records,
     chunk_business_text,
@@ -56,7 +57,13 @@ def rebuild_regular_index(stock_code: str, dart: OpenDartReader | None = None) -
     financial_records = []
 
     for filing, raw_document in filings:
-        clean_text = clean_document(raw_document)
+        parsed_filing = None
+        try:
+            parsed_filing = parse_filing_document(raw_document)
+        except Exception as exc:
+            logger.warning("[%s] DART 원문 구조 파싱 실패(%s): %s", stock_code, filing.receipt_no, exc)
+
+        clean_text = parsed_filing.clean_text if parsed_filing and parsed_filing.clean_text else clean_document(raw_document)
         cleaned_path = save_cleaned_text(stock_code, filing.receipt_no, clean_text)
         filing.cleaned_path = cleaned_path
 
@@ -89,8 +96,28 @@ def rebuild_regular_index(stock_code: str, dart: OpenDartReader | None = None) -
                 }
             )
 
-        business_text = extract_business_section(clean_text)
-        business_chunks = chunk_business_text(business_text)
+        business_chunks = []
+        if parsed_filing:
+            business_sections = extract_business_sections(parsed_filing)
+            business_chunks = chunk_business_sections(business_sections)
+            if business_chunks:
+                logger.info(
+                    "[%s] XML section-aware chunks created receipt_no=%s sections=%s chunks=%s",
+                    stock_code,
+                    filing.receipt_no,
+                    len(business_sections),
+                    len(business_chunks),
+                )
+
+        if not business_chunks:
+            logger.warning(
+                "[%s] XML section-aware chunking unavailable; fallback to recursive text chunks receipt_no=%s",
+                stock_code,
+                filing.receipt_no,
+            )
+            business_text = extract_business_section(clean_text)
+            business_chunks = chunk_business_text(business_text)
+
         chunk_records.extend(
             build_regular_chunk_records(
                 structured_data,

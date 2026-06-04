@@ -1,0 +1,309 @@
+2026-06-04 06:33:45,563 [INFO] ragas_eval - run_start dataset=eval/RAGAS_수정질문목록.xlsx limit=2 batch_size=2 request_interval=1.5s batch_sleep=3.0s skip_collect=False skip_evaluate=False
+2026-06-04 06:34:14,637 [INFO] ragas_eval - run_start dataset=eval/RAGAS_수정질문목록.xlsx limit=2 batch_size=2 request_interval=1.5s batch_sleep=3.0s skip_collect=False skip_evaluate=False
+2026-06-04 06:34:14,641 [INFO] ragas_eval - collect_start samples=2 request_interval=1.5s output=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_answers_20260604_063414.jsonl
+2026-06-04 06:34:14,642 [INFO] ragas_eval - collect_sample_start index=1/2 company=삼성전자 stock_code=005930 question_chars=21
+2026-06-04 06:34:14,642 [INFO] src.answer_engine - answer_route intent=business_text stock_codes=['005930']
+2026-06-04 06:34:14,643 [INFO] src.retriever - retrieve_start intent=business_text stock_codes=['005930'] index_types=['regular'] k=8 search_k=8
+2026-06-04 06:34:19,301 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:34:19,318 [INFO] src.retriever - retrieve_complete intent=business_text chunk_ids=8 document_count=8 missing_indexes=[]
+2026-06-04 06:34:29,618 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:29,631 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:34:29,631 [INFO] ragas_eval - collect_sample_complete index=1/2 elapsed_ms=13737.0 context_count=8 source_count=8
+2026-06-04 06:34:29,632 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:34:31,135 [INFO] ragas_eval - collect_sample_start index=2/2 company=삼성전자 stock_code=005930 question_chars=29
+2026-06-04 06:34:31,135 [INFO] src.answer_engine - answer_route intent=business_text stock_codes=['005930']
+2026-06-04 06:34:31,135 [INFO] src.retriever - retrieve_start intent=business_text stock_codes=['005930'] index_types=['regular'] k=8 search_k=8
+2026-06-04 06:34:32,801 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:34:32,806 [INFO] src.retriever - retrieve_complete intent=business_text chunk_ids=8 document_count=8 missing_indexes=[]
+2026-06-04 06:34:39,900 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:39,905 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:34:39,906 [INFO] ragas_eval - collect_sample_complete index=2/2 elapsed_ms=8771.6 context_count=8 source_count=8
+2026-06-04 06:34:39,907 [INFO] ragas_eval - collect_complete samples=2 output=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_answers_20260604_063414.jsonl
+2026-06-04 06:34:39,937 [INFO] ragas_eval - evaluate_start samples=2 batches=1 batch_size=2 batch_sleep=3.0s metrics=faithfulness,answer_relevancy,context_precision,context_recall evaluator_model=gpt-4o-mini
+2026-06-04 06:34:39,938 [INFO] ragas_eval - evaluate_batch_start batch=1/1 size=2
+2026-06-04 06:34:41,752 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:42,449 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:34:43,349 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,203 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,882 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,883 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,883 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,884 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,885 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,885 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:44,886 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:34:45,815 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:34:46,633 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:34:47,473 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:35:01,741 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:03,157 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:04,522 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:05,933 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:05,934 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:08,995 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:11,493 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:12,879 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:16,338 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:19,326 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:22,053 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:24,690 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:27,114 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:30,846 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:35,175 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:36,574 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:39,362 [INFO] ragas_eval - evaluate_batch_complete batch=1/1 elapsed_ms=56593.8
+2026-06-04 06:35:39,362 [INFO] ragas_eval - evaluate_complete scored_samples=2 output_jsonl=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063414.jsonl output_csv=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063414.csv
+2026-06-04 06:35:39,362 [INFO] ragas_eval - run_complete answers=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_answers_20260604_063414.jsonl scores_jsonl=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063414.jsonl scores_csv=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063414.csv log=eval/ragas_eval_revised.log
+2026-06-04 06:35:52,605 [INFO] ragas_eval - run_start dataset=eval/RAGAS_수정질문목록.xlsx limit=None batch_size=5 request_interval=1.5s batch_sleep=3.0s skip_collect=False skip_evaluate=False
+2026-06-04 06:35:52,616 [INFO] ragas_eval - collect_start samples=10 request_interval=1.5s output=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_answers_20260604_063552.jsonl
+2026-06-04 06:35:52,617 [INFO] ragas_eval - collect_sample_start index=1/10 company=삼성전자 stock_code=005930 question_chars=21
+2026-06-04 06:35:52,618 [INFO] src.answer_engine - answer_route intent=business_text stock_codes=['005930']
+2026-06-04 06:35:52,618 [INFO] src.retriever - retrieve_start intent=business_text stock_codes=['005930'] index_types=['regular'] k=8 search_k=8
+2026-06-04 06:35:53,477 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:35:53,482 [INFO] src.retriever - retrieve_complete intent=business_text chunk_ids=8 document_count=8 missing_indexes=[]
+2026-06-04 06:35:57,998 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:35:58,008 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:35:58,009 [INFO] ragas_eval - collect_sample_complete index=1/10 elapsed_ms=5391.5 context_count=8 source_count=8
+2026-06-04 06:35:58,009 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:35:59,512 [INFO] ragas_eval - collect_sample_start index=2/10 company=삼성전자 stock_code=005930 question_chars=29
+2026-06-04 06:35:59,513 [INFO] src.answer_engine - answer_route intent=business_text stock_codes=['005930']
+2026-06-04 06:35:59,513 [INFO] src.retriever - retrieve_start intent=business_text stock_codes=['005930'] index_types=['regular'] k=8 search_k=8
+2026-06-04 06:35:59,698 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:35:59,704 [INFO] src.retriever - retrieve_complete intent=business_text chunk_ids=8 document_count=8 missing_indexes=[]
+2026-06-04 06:36:04,746 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:04,766 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:36:04,768 [INFO] ragas_eval - collect_sample_complete index=2/10 elapsed_ms=3954.4 context_count=8 source_count=8
+2026-06-04 06:36:04,769 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:06,271 [INFO] ragas_eval - collect_sample_start index=3/10 company=삼성전자 stock_code=005930 question_chars=24
+2026-06-04 06:36:06,271 [INFO] src.answer_engine - answer_route intent=business_text stock_codes=['005930']
+2026-06-04 06:36:06,271 [INFO] src.retriever - retrieve_start intent=business_text stock_codes=['005930'] index_types=['regular'] k=8 search_k=8
+2026-06-04 06:36:06,472 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:06,477 [INFO] src.retriever - retrieve_complete intent=business_text chunk_ids=8 document_count=8 missing_indexes=[]
+2026-06-04 06:36:11,887 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:11,889 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:36:11,890 [INFO] ragas_eval - collect_sample_complete index=3/10 elapsed_ms=5619.0 context_count=8 source_count=8
+2026-06-04 06:36:11,891 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:13,393 [INFO] ragas_eval - collect_sample_start index=4/10 company=삼성전자 stock_code=005930 question_chars=19
+2026-06-04 06:36:13,393 [INFO] src.answer_engine - answer_route intent=risk_analysis stock_codes=['005930']
+2026-06-04 06:36:13,393 [INFO] src.retriever - retrieve_start intent=risk_analysis stock_codes=['005930'] index_types=['regular'] k=8 search_k=32
+2026-06-04 06:36:13,578 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:13,593 [INFO] src.retriever - retrieve_complete intent=risk_analysis chunk_ids=32 document_count=8 missing_indexes=[]
+2026-06-04 06:36:23,685 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:23,687 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:36:23,688 [INFO] ragas_eval - collect_sample_complete index=4/10 elapsed_ms=10294.7 context_count=8 source_count=8
+2026-06-04 06:36:23,689 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:25,190 [INFO] ragas_eval - collect_sample_start index=5/10 company=삼성전자 stock_code=005930 question_chars=25
+2026-06-04 06:36:25,190 [INFO] src.answer_engine - answer_route intent=risk_analysis stock_codes=['005930']
+2026-06-04 06:36:25,190 [INFO] src.retriever - retrieve_start intent=risk_analysis stock_codes=['005930'] index_types=['regular'] k=8 search_k=32
+2026-06-04 06:36:25,394 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:25,407 [INFO] src.retriever - retrieve_complete intent=risk_analysis chunk_ids=32 document_count=8 missing_indexes=[]
+2026-06-04 06:36:31,904 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:31,908 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:36:31,909 [INFO] ragas_eval - collect_sample_complete index=5/10 elapsed_ms=6719.6 context_count=8 source_count=8
+2026-06-04 06:36:31,911 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:33,414 [INFO] ragas_eval - collect_sample_start index=6/10 company=삼성전자 stock_code=005930 question_chars=25
+2026-06-04 06:36:33,414 [INFO] src.answer_engine - answer_route intent=business_text stock_codes=['005930']
+2026-06-04 06:36:33,414 [INFO] src.retriever - retrieve_start intent=business_text stock_codes=['005930'] index_types=['regular'] k=8 search_k=8
+2026-06-04 06:36:33,622 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:33,625 [INFO] src.retriever - retrieve_complete intent=business_text chunk_ids=8 document_count=8 missing_indexes=[]
+2026-06-04 06:36:37,722 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:37,729 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:36:37,730 [INFO] ragas_eval - collect_sample_complete index=6/10 elapsed_ms=2917.6 context_count=8 source_count=8
+2026-06-04 06:36:37,732 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:39,235 [INFO] ragas_eval - collect_sample_start index=7/10 company=삼성전자 stock_code=005930 question_chars=28
+2026-06-04 06:36:39,235 [INFO] src.answer_engine - answer_route intent=business_text stock_codes=['005930']
+2026-06-04 06:36:39,236 [INFO] src.retriever - retrieve_start intent=business_text stock_codes=['005930'] index_types=['regular'] k=8 search_k=8
+2026-06-04 06:36:39,425 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:39,431 [INFO] src.retriever - retrieve_complete intent=business_text chunk_ids=8 document_count=8 missing_indexes=[]
+2026-06-04 06:36:45,130 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:45,137 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:36:45,139 [INFO] ragas_eval - collect_sample_complete index=7/10 elapsed_ms=5904.3 context_count=8 source_count=8
+2026-06-04 06:36:45,141 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:46,644 [INFO] ragas_eval - collect_sample_start index=8/10 company=삼성전자 stock_code=005930 question_chars=36
+2026-06-04 06:36:46,644 [INFO] src.answer_engine - answer_route intent=financial_numeric stock_codes=['005930']
+2026-06-04 06:36:46,648 [INFO] src.retriever - retrieve_start intent=financial_numeric stock_codes=['005930'] index_types=['regular'] k=8 search_k=32
+2026-06-04 06:36:46,832 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:46,843 [INFO] src.retriever - retrieve_complete intent=financial_numeric chunk_ids=32 document_count=8 missing_indexes=[]
+2026-06-04 06:36:49,650 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:49,669 [INFO] src.answer_engine - answer_complete route=structured_api source_count=8
+2026-06-04 06:36:49,671 [INFO] ragas_eval - collect_sample_complete index=8/10 elapsed_ms=3027.2 context_count=9 source_count=8
+2026-06-04 06:36:49,672 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:51,175 [INFO] ragas_eval - collect_sample_start index=9/10 company=삼성전자 stock_code=005930 question_chars=33
+2026-06-04 06:36:51,176 [INFO] src.answer_engine - answer_route intent=unknown stock_codes=['005930']
+2026-06-04 06:36:51,176 [INFO] src.retriever - retrieve_start intent=unknown stock_codes=['005930'] index_types=['regular', 'event'] k=8 search_k=8
+2026-06-04 06:36:51,404 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:51,633 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:51,637 [INFO] src.retriever - retrieve_complete intent=unknown chunk_ids=12 document_count=8 missing_indexes=[]
+2026-06-04 06:36:57,672 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:36:57,673 [INFO] src.answer_engine - answer_complete route=both source_count=8
+2026-06-04 06:36:57,673 [INFO] ragas_eval - collect_sample_complete index=9/10 elapsed_ms=6498.3 context_count=8 source_count=8
+2026-06-04 06:36:57,675 [INFO] ragas_eval - collect_sleep seconds=1.5
+2026-06-04 06:36:59,177 [INFO] ragas_eval - collect_sample_start index=10/10 company=삼성전자 stock_code=005930 question_chars=35
+2026-06-04 06:36:59,177 [INFO] src.answer_engine - answer_route intent=risk_analysis stock_codes=['005930']
+2026-06-04 06:36:59,177 [INFO] src.retriever - retrieve_start intent=risk_analysis stock_codes=['005930'] index_types=['regular'] k=8 search_k=32
+2026-06-04 06:36:59,388 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:36:59,401 [INFO] src.retriever - retrieve_complete intent=risk_analysis chunk_ids=32 document_count=8 missing_indexes=[]
+2026-06-04 06:37:12,087 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:12,100 [INFO] src.answer_engine - answer_complete route=raw_filing_rag source_count=8
+2026-06-04 06:37:12,102 [INFO] ragas_eval - collect_sample_complete index=10/10 elapsed_ms=11518.7 context_count=8 source_count=8
+2026-06-04 06:37:12,104 [INFO] ragas_eval - collect_complete samples=10 output=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_answers_20260604_063552.jsonl
+2026-06-04 06:37:12,135 [INFO] ragas_eval - evaluate_start samples=10 batches=2 batch_size=5 batch_sleep=3.0s metrics=faithfulness,answer_relevancy,context_precision,context_recall evaluator_model=gpt-4o-mini
+2026-06-04 06:37:12,135 [INFO] ragas_eval - evaluate_batch_start batch=1/2 size=5
+2026-06-04 06:37:13,629 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:14,332 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:37:15,167 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,085 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,751 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,752 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,752 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,753 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,753 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,754 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,754 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,756 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,756 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,757 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:16,758 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:17,439 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:37:18,251 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:19,043 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:20,386 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:37:21,180 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:22,020 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:23,397 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:37:24,207 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:25,023 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:36,713 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:36,714 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:36,715 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:36,715 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:40,832 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:40,834 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:42,204 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:44,232 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:37:45,063 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:45,864 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:37:47,915 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:47,915 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:49,288 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:49,289 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:52,151 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:52,152 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:54,956 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:54,956 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:54,957 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:37:57,796 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:01,780 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:04,468 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:04,469 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:04,470 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:08,524 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:08,525 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:11,269 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:11,270 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:13,984 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:15,359 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:18,097 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:18,098 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:21,074 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:23,020 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:24,365 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:24,366 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:24,367 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:28,458 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:28,460 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:31,136 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:32,518 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:33,860 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:35,221 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:36,569 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:36,570 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:39,307 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:39,308 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:42,021 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:43,982 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:45,202 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:47,611 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:51,701 [INFO] ragas_eval - evaluate_batch_complete batch=1/2 elapsed_ms=95467.9
+2026-06-04 06:38:51,701 [INFO] ragas_eval - evaluate_batch_sleep seconds=3.0
+2026-06-04 06:38:54,701 [INFO] ragas_eval - evaluate_batch_start batch=2/2 size=5
+2026-06-04 06:38:55,406 [INFO] openai._base_client - Retrying request to /chat/completions in 0.444709 seconds
+2026-06-04 06:38:56,081 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:56,773 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:38:57,857 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:38:58,642 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,382 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,383 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,384 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,384 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,385 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,385 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,386 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,386 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,387 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,387 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:38:59,388 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:00,196 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:39:01,047 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:01,878 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:03,230 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:39:04,014 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:04,805 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:06,155 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:39:06,953 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:07,758 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:19,090 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:19,091 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:19,092 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:19,093 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:23,196 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:23,197 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:25,938 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:26,622 [WARNING] ragas.prompt.pydantic_prompt - LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+2026-06-04 06:39:27,493 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:28,281 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-06-04 06:39:30,320 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:30,321 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:30,322 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:35,780 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:35,781 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:38,510 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:38,511 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:41,230 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:42,594 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:42,596 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:45,436 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:45,437 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:48,341 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:49,713 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:49,714 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:49,715 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:52,477 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:52,477 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:56,732 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:39:59,462 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:00,841 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:00,842 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:00,843 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:00,843 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:05,166 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:10,140 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:11,504 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:11,505 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:11,506 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:11,507 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:17,024 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:19,534 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:21,304 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:22,679 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:22,680 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:22,681 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:26,906 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:28,272 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:29,614 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:29,615 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:30,989 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:36,811 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-04 06:40:39,533 [INFO] ragas_eval - evaluate_batch_complete batch=2/2 elapsed_ms=100630.5
+2026-06-04 06:40:39,533 [INFO] ragas_eval - evaluate_complete scored_samples=10 output_jsonl=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063552.jsonl output_csv=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063552.csv
+2026-06-04 06:40:39,534 [INFO] ragas_eval - run_complete answers=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_answers_20260604_063552.jsonl scores_jsonl=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063552.jsonl scores_csv=/home/arching/projects/ai_service/26-1ArtificialIntelligenceService/eval/results/ragas_scores_20260604_063552.csv log=eval/ragas_eval_revised.log

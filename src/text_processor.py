@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from langchain_core.documents import Document
 
@@ -8,9 +8,9 @@ from .data_processor import (
     _clean_text,
     _extract_business_section,
     _pick_financial_value,
-    make_business_chunk_text,
     make_structured_financial_text,
 )
+from .filing_parser import BusinessChunk
 from .config import REGULAR_INDEX
 
 RISK_PATTERNS = {
@@ -168,9 +168,32 @@ def _make_structured_financial_chunk_text(structured_data: Dict[str, Any]) -> st
     )
 
 
+def _make_regular_chunk_text(
+    chunk: str,
+    structured_data: Dict[str, Any],
+    chunk_index: int,
+    chunk_total: int,
+    section: str,
+    label: str,
+) -> str:
+    return "\n".join(
+        [
+            label,
+            f"기업코드: {structured_data.get('company_code')}",
+            f"회사명: {structured_data.get('company_name')}",
+            f"보고서: {structured_data.get('report_name')}",
+            f"접수번호: {structured_data.get('receipt_no')}",
+            f"섹션: {section}",
+            f"청크: {chunk_index}/{chunk_total}",
+            "",
+            chunk.strip(),
+        ]
+    )
+
+
 def build_regular_chunk_records(
     structured_data: Dict[str, Any],
-    business_chunks: List[str],
+    business_chunks: List[Union[str, BusinessChunk]],
     include_structured: bool = True,
 ) -> List[Dict[str, Any]]:
     stock_code = structured_data.get("company_code") or structured_data.get("stock_code") or ""
@@ -213,26 +236,60 @@ def build_regular_chunk_records(
         )
 
     chunk_total = len(business_chunks)
-    for index, chunk in enumerate(business_chunks, start=1):
+    for index, chunk_item in enumerate(business_chunks, start=1):
+        if isinstance(chunk_item, BusinessChunk):
+            chunk = chunk_item.content
+            data_type = chunk_item.data_type or "business_text"
+            section = chunk_item.section or chunk_item.section_title or "II. 사업의 내용"
+            section_path = chunk_item.section_path or [section]
+            chunk_strategy = chunk_item.chunk_strategy or "xml_section"
+            block_types = chunk_item.block_types or []
+            extra_metadata = dict(chunk_item.extra_metadata or {})
+        else:
+            chunk = str(chunk_item or "")
+            data_type = "business_text"
+            section = "II. 사업의 내용"
+            section_path = [section]
+            chunk_strategy = "recursive_text"
+            block_types = ["text"]
+            extra_metadata = {}
+
+        if not chunk.strip():
+            continue
+
+        label = "[비정형 사업 내용]"
+        if data_type == "risk_text":
+            label = "[비정형 리스크 내용]"
+        elif data_type == "table_text":
+            label = "[비정형 표 내용]"
+
         business_metadata = {
             **base_metadata,
             "index_type": REGULAR_INDEX,
-            "data_type": "business_text",
-            "section": "II. 사업의 내용",
+            "data_type": data_type,
+            "section": section,
+            "section_path": section_path,
+            "section_title": section_path[-1] if section_path else section,
+            "section_level": len(section_path),
+            "chunk_strategy": chunk_strategy,
+            "block_types": block_types,
             "chunk_index": index,
             "chunk_total": chunk_total,
+            **extra_metadata,
         }
-        business_content = make_business_chunk_text(
+        business_content = _make_regular_chunk_text(
             chunk=chunk,
             structured_data=structured_data,
             chunk_index=index,
             chunk_total=chunk_total,
+            section=section,
+            label=label,
         )
         records.append(
             {
                 "receipt_no": receipt_no,
-                "data_type": "business_text",
-                "section": "II. 사업의 내용",
+                "data_type": data_type,
+                "section": section,
                 "chunk_index": index,
                 "chunk_total": chunk_total,
                 "content": business_content,
@@ -240,7 +297,7 @@ def build_regular_chunk_records(
             }
         )
 
-        if _is_risk_related(chunk):
+        if data_type == "business_text" and _is_risk_related(chunk):
             risk_metadata = {
                 **business_metadata,
                 "data_type": "risk_text",
