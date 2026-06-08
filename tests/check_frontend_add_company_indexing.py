@@ -12,9 +12,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fastapi.testclient import TestClient
 
-from src.api_server import app
-from src.config import EVENT_INDEX, REGULAR_INDEX
-from src.finance_store import get_active_chunks, init_db
+from backend.src.api_server import app
+from backend.src.config import EVENT_INDEX, REGULAR_INDEX
+from backend.src.finance_store import get_active_chunks, init_db
 
 
 def main() -> int:

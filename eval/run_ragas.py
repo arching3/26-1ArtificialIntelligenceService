@@ -24,10 +24,10 @@ from ragas.embeddings import LangchainEmbeddingsWrapper
 from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import AnswerRelevancy, ContextPrecision, ContextRecall, Faithfulness
 
-from src.answer_engine import _sql_context, answer_question
-from src.company_lookup import resolve_company
-from src.config import EMBEDDING_MODEL, LLM_MODEL
-from src.finance_store import get_chunks_by_ids, init_db
+from backend.src.rag_service import _sql_context, answer_question
+from backend.src.company_lookup import resolve_company
+from backend.src.config import EMBEDDING_MODEL, LLM_MODEL
+from backend.src.finance_store import get_chunks_by_ids, init_db
 
 EVAL_DIR = Path(__file__).resolve().parent
 DEFAULT_DATASET = EVAL_DIR / "sample_ragas_dataset.jsonl"

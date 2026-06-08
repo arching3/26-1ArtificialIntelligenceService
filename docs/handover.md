@@ -22,7 +22,7 @@ source ../venv.sh
 백엔드:
 
 ```bash
-uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload
+uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 프론트엔드:
@@ -137,7 +137,7 @@ POST   /api/companies/stocks_realtime
 
 ```bash
 python -m py_compile src/*.py legacy/*.py streamlit_app.py
-uvicorn src.api_server:app --host 127.0.0.1 --port 8765
+uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8765
 ```
 
 FastAPI `TestClient`로 `health`, `index-status`, `summary`, `chat` smoke test도 통과했습니다.

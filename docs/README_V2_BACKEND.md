@@ -14,7 +14,7 @@ source ../venv.sh
 백엔드:
 
 ```bash
-uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload
+uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 프론트엔드:
@@ -69,8 +69,8 @@ POST /api/companies/stocks_realtime
 ## 데이터 파이프라인
 
 ```bash
-python -m src.pipeline 005930
-python -m src.pipeline 351320 --event-only
+python -m backend.src.pipeline 005930
+python -m backend.src.pipeline 351320 --event-only
 ```
 
 파이프라인은 다음 산출물을 만듭니다.
@@ -100,6 +100,6 @@ storage/
 ## 검색 스모크 체크
 
 ```python
-from src.retriever import retrieve_context_text
+from backend.src.rag_service import retrieve_context_text
 print(retrieve_context_text("삼성전자 DS 부문은 무엇을 생산하나?", ["005930"])["context"][:1000])
 ```

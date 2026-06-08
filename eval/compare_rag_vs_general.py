@@ -15,7 +15,7 @@ if str(ROOT_DIR) not in sys.path:
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from src.config import LLM_MODEL
+from backend.src.config import LLM_MODEL
 
 EVAL_DIR = Path(__file__).resolve().parent
 DEFAULT_RAG_ANSWERS = EVAL_DIR / "results" / "ragas_answers_20260604_063552.jsonl"

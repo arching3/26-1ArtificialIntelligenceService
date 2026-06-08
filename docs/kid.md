@@ -20,7 +20,7 @@
 
 ```bash
 source ../venv.sh
-uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload
+uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
 streamlit run streamlit_app.py
 ```
 

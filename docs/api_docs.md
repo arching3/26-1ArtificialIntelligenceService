@@ -5,7 +5,7 @@ Backend entrypoint: `src/api_server.py`
 Run locally:
 
 ```bash
-uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload
+uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Base URL:
@@ -398,7 +398,7 @@ Field behavior:
 | `company_name` | Fallback company identifier. |
 | `period` | Accepted by the API model but not directly used by the route. |
 
-Response shape is produced by `src.answer_engine.answer_question` and may include:
+Response shape is produced by `backend.src.rag_service.answer_question` and may include:
 
 ```json
 {
@@ -441,7 +441,7 @@ Response:
 }
 ```
 
-Actual response fields depend on `src.stock_service.fetch_stock_history`.
+Actual response fields depend on `backend.src.stock_service.fetch_stock_history`.
 
 ### `POST /api/companies/stocks_realtime`
 
@@ -469,7 +469,7 @@ Response:
 }
 ```
 
-Actual response fields depend on `src.stock_service.fetch_realtime_stock`.
+Actual response fields depend on `backend.src.stock_service.fetch_realtime_stock`.
 
 ## Error Responses
 

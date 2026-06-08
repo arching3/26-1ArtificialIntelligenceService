@@ -198,7 +198,7 @@ OPENAI_API_KEY=...
 백엔드 실행:
 
 ```bash
-uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload
+uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Streamlit 프론트엔드 실행:
@@ -210,13 +210,13 @@ streamlit run streamlit_app.py
 단일 기업 파이프라인 실행 예시:
 
 ```bash
-python -m src.pipeline 005930
+python -m backend.src.pipeline 005930
 ```
 
 이벤트 공시만 재적재하는 예시:
 
 ```bash
-python -m src.pipeline 351320 --event-only
+python -m backend.src.pipeline 351320 --event-only
 ```
 
 ## 검증 내용

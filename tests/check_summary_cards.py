@@ -11,11 +11,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.api_server import _summary_for_company
-from src.company_lookup import resolve_company
-from src.config import EVENT_INDEX, REGULAR_INDEX, cleaned_dir, company_dir, index_dir, raw_dir
-from src.finance_store import get_active_chunks, get_financials, init_db, list_filings
-from src.pipeline import rebuild_company_indexes
+from backend.src.api_server import _summary_for_company
+from backend.src.company_lookup import resolve_company
+from backend.src.config import EVENT_INDEX, REGULAR_INDEX, cleaned_dir, company_dir, index_dir, raw_dir
+from backend.src.finance_store import get_active_chunks, get_financials, init_db, list_filings
+from backend.src.pipeline import rebuild_company_indexes
 
 
 FRONTEND_CARD_FIELDS = [

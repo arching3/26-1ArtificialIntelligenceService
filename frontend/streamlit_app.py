@@ -15,7 +15,11 @@ CHAT_REQUEST_TIMEOUT = 60
 PERIOD_OPTIONS = ["최근 1주", "최근 1개월", "최근 3개월", "최근 6개월", "최근 1년", "최근 3년", "전체"]
 DEFAULT_PERIOD = "최근 1년"
 APP_DIR = Path(__file__).resolve().parent
-HERO_IMAGE_PATH = APP_DIR / "assets" / "dart-lens-hero.png"
+PROJECT_ROOT = APP_DIR.parent
+HERO_IMAGE_PATHS = (
+    APP_DIR / "assets" / "dart-lens-hero.png",
+    PROJECT_ROOT / "assets" / "dart-lens-hero.png",
+)
 
 
 def image_data_uri(path: Path) -> str:
@@ -25,7 +29,7 @@ def image_data_uri(path: Path) -> str:
     return f"data:image/png;base64,{encoded}"
 
 
-HERO_IMAGE_URI = image_data_uri(HERO_IMAGE_PATH)
+HERO_IMAGE_URI = next((uri for uri in (image_data_uri(path) for path in HERO_IMAGE_PATHS) if uri), "")
 HERO_BACKGROUND_STYLE = f"background-image: linear-gradient(90deg, rgba(9, 13, 20, 0.94) 0%, rgba(9, 13, 20, 0.72) 46%, rgba(9, 13, 20, 0.28) 100%), url('{HERO_IMAGE_URI}');" if HERO_IMAGE_URI else ""
 
 SAMPLE_SUMMARIES = {

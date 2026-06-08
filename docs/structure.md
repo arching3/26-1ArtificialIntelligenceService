@@ -27,13 +27,13 @@
 
 ## 실행 진입점
 
-- `uvicorn src.api_server:app --host 127.0.0.1 --port 8000 --reload`
+- `uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload`
   - FastAPI 백엔드 진입점입니다. `src/api_server.py`의 `app`을 실행합니다.
 - `streamlit run streamlit_app.py`
   - 현재 권장 프론트엔드 진입점입니다. Streamlit UI를 띄웁니다.
-- `python -m src.pipeline 005930`
+- `python -m backend.src.pipeline 005930`
   - 단일 기업의 정기공시/이벤트 공시 인덱싱 파이프라인을 직접 실행합니다.
-- `python -m src.pipeline 351320 --event-only`
+- `python -m backend.src.pipeline 351320 --event-only`
   - 이벤트 공시만 다시 적재할 때 사용하는 실행 경로입니다.
 - `streamlit run legacy/main.py`
   - `legacy/` 아래 v1 프로토타입용 실행 경로입니다.
