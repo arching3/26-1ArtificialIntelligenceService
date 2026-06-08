@@ -246,6 +246,9 @@ h1, h2, h3 {
   border-radius: 999px;
   background: rgba(22, 101, 52, 0.24);
 }
+.summary-toggle-spacer {
+  height: 18px;
+}
 .sidebar-spacer { min-height: 30vh; }
 .stock-panel {
   margin-top: 8px;

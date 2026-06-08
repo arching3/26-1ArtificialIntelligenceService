@@ -388,7 +388,7 @@ def company_add_dialog() -> None:
 
     st.caption("원하는 기업이 없으면 검색하세요.")
     with st.form("dialog-company-search-form", clear_on_submit=False):
-        search_cols = st.columns([0.68, 0.16, 0.16])
+        search_cols = st.columns([0.62, 0.16, 0.22])
         query = search_cols[0].text_input(
             "기업 검색",
             key="dialog_company_query",
@@ -397,8 +397,9 @@ def company_add_dialog() -> None:
         )
         if st.session_state.dialog_selected_company:
             add_submitted = search_cols[2].form_submit_button(
-                "＋",
+                "＋ 추가",
                 use_container_width=True,
+                type="primary",
                 help="선택한 기업을 관심기업에 추가합니다. Enter를 눌러도 추가됩니다.",
             )
             search_submitted = search_cols[1].form_submit_button(
@@ -413,7 +414,7 @@ def company_add_dialog() -> None:
                 help="입력한 기업명을 검색합니다. Enter를 눌러도 검색됩니다.",
             )
             add_submitted = search_cols[2].form_submit_button(
-                "＋",
+                "＋ 추가",
                 use_container_width=True,
                 disabled=True,
                 help="먼저 기업을 선택하세요.",

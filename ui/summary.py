@@ -57,6 +57,7 @@ def render_summary(summary: dict[str, Any] | None, summary_status: str) -> None:
     )
 
     button_label = "공시 요약 접기" if expanded else "공시 요약 더보기"
+    st.markdown('<div class="summary-toggle-spacer"></div>', unsafe_allow_html=True)
     if st.button(button_label, key="summary-expand-toggle", use_container_width=True):
         st.session_state.summary_expanded = not expanded
         st.rerun()
