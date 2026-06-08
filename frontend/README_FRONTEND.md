@@ -4,6 +4,7 @@
 
 ## 실행
 
+<!-- frontend 브랜치 변경: 현재 브랜치의 backend/src 패키지 구조에 맞춰 실행 경로를 보정했습니다. -->
 ```bash
 pip install -r requirements.txt
 uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
@@ -38,22 +39,9 @@ http://127.0.0.1:8501
 ```bash
 uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
 ```
-
-## Requester GUI
-
-`tests/requester.py`를 이용해 `backend/src/api_server.py`의 엔드포인트를 자유롭게 호출하는 테스트 GUI입니다.
-
-```bash
-uvicorn backend.src.api_server:app --host 127.0.0.1 --port 8000 --reload
-streamlit run tests/requester_gui.py
-```
-
-GUI에서 GET/POST, 경로, 헤더, 쿼리 파라미터, POST JSON body를 직접 바꿔 요청할 수 있습니다.
-
 ## 로컬 연결 테스트
 
-`backend/src/api_server.py`는 프론트엔드가 기대하는 `/api/...` 엔드포인트를 제공합니다.
+백엔드는 `backend.src.api_server:app`이 프론트엔드가 기대하는 `/api/...` 엔드포인트를 제공합니다.
 
 - 기본 API 주소: `http://127.0.0.1:8000`
 - 기본 프론트 주소: `http://127.0.0.1:8501`
-- DART/OpenAI/FAISS 연결이 준비되어 있지 않아도 삼성전자, SK하이닉스 샘플 데이터로 화면을 확인할 수 있습니다.

@@ -19,6 +19,8 @@ from .finance_store import (
 )
 from .index_manager import rebuild_index
 from .logging_config import configure_logging
+from .company_lookup import Company, resolve_company
+from .summary_service import SummaryService
 from .document_processor import (
     build_regular_chunk_records,
     chunk_business_text,
@@ -221,8 +223,17 @@ def rebuild_company_indexes(
         results["regular"] = rebuild_regular_index(stock_code, dart=dart)
     if include_event:
         results["event"] = rebuild_event_index(stock_code, dart=dart)
+    _refresh_summary_after_rebuild(stock_code)
     logger.info("[%s] company index rebuild complete", stock_code)
     return results
+
+
+def _refresh_summary_after_rebuild(stock_code: str) -> None:
+    try:
+        company = resolve_company(stock_code) or Company(stock_code=stock_code, corp_name=stock_code, source="direct")
+        SummaryService().refresh(company, use_llm=True)
+    except Exception as exc:
+        logger.warning("[%s] summary refresh after index rebuild failed: %s", stock_code, exc)
 
 
 def rebuild_batch(stock_codes: List[str]) -> Dict[str, Any]:

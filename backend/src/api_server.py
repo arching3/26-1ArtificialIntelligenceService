@@ -14,20 +14,20 @@ from .company_lookup import Company, resolve_company, search_companies
 from .config import EVENT_INDEX, REGULAR_INDEX, index_dir
 from .finance_store import (
     get_filing,
-    get_financials,
     get_active_chunks,
-    get_latest_chunks,
     init_db,
     list_filings,
 )
 from .logging_config import configure_logging
 from .pipeline import rebuild_company_indexes
 from .rag_service import answer_question
+from .summary_service import SummaryService
 from .stock_service import fetch_realtime_stock, fetch_stock_history
 
 
 configure_logging()
 logger = logging.getLogger(__name__)
+summary_service = SummaryService()
 
 app = FastAPI(title="DART Lens Backend", version="0.1.0")
 app.add_middleware(
@@ -351,61 +351,7 @@ def _current_index_status(stock_code: str) -> dict[str, Any]:
 
 
 def _summary_for_company(company: Company) -> dict[str, str]:
-    financial = get_financials(company.stock_code)
-    business_chunks = get_latest_chunks(company.stock_code, index_type=REGULAR_INDEX, data_type="business_text", limit=3)
-    risk_chunks = get_latest_chunks(company.stock_code, index_type=REGULAR_INDEX, data_type="risk_text", limit=2)
-    event_chunks = get_latest_chunks(company.stock_code, index_type=EVENT_INDEX, data_type="event_text", limit=3)
-
-    return {
-        "overview": _summarize_chunks(business_chunks, fallback=f"{company.corp_name}의 사업 개요 인덱스가 아직 준비되지 않았습니다."),
-        "benefit": _financial_line(financial),
-        "earnings": _earnings_line(financial),
-        "risk": _summarize_chunks(risk_chunks, fallback="공시 인덱스에서 별도 리스크 문단을 찾지 못했습니다."),
-        "changing": _summarize_chunks(event_chunks, fallback="최근 이벤트 공시 인덱스가 아직 준비되지 않았거나 해당 이벤트가 없습니다."),
-        "status": _status_line(company.stock_code),
-        "anomaly": _event_anomaly_line(company.stock_code),
-    }
-
-
-def _summarize_chunks(chunks: list[dict[str, Any]], fallback: str) -> str:
-    if not chunks:
-        return fallback
-    text = " ".join((chunk.get("content") or "").replace("\n", " ") for chunk in chunks)
-    return text[:420] + ("..." if len(text) > 420 else "")
-
-
-def _financial_line(financial: dict[str, Any] | None) -> str:
-    if not financial:
-        return "정형 재무 데이터가 아직 준비되지 않았습니다."
-    report_name = financial.get("report_name") or f"{financial.get('business_year')}년 보고서"
-    period_month = financial.get("period_month")
-    period_text = f"{period_month}개월 누적" if period_month else "보고서 기준"
-    return (
-        f"{report_name} {period_text} 기준 매출액 {_format_krw(financial.get('revenue'))}, "
-        f"영업이익 {_format_krw(financial.get('operating_profit'))}, "
-        f"당기순이익 {_format_krw(financial.get('net_income'))}입니다."
-    )
-
-
-def _earnings_line(financial: dict[str, Any] | None) -> str:
-    if not financial:
-        return "실적 동향은 정형 재무 데이터 적재 후 표시됩니다."
-    return f"최근 저장된 보고서는 {financial.get('report_name') or '정보 없음'}이며 접수번호는 {financial.get('receipt_no') or '정보 없음'}입니다."
-
-
-def _status_line(stock_code: str) -> str:
-    status = _current_index_status(stock_code)
-    regular = "준비됨" if status["indexes"]["regular"]["ready"] else "미준비"
-    event = "준비됨" if status["indexes"]["event"]["ready"] else "미준비"
-    return f"정기공시 인덱스: {regular}, 이벤트 공시 인덱스: {event}"
-
-
-def _event_anomaly_line(stock_code: str) -> str:
-    filings = list_filings(stock_code, index_type=EVENT_INDEX, limit=5)
-    if not filings:
-        return "최근 이벤트 공시 특이사항이 저장되어 있지 않습니다."
-    names = ", ".join(row.get("report_name") or row.get("filing_detail_type") or row.get("receipt_no") for row in filings[:3])
-    return f"최근 이벤트 공시로 {names} 등이 저장되어 있습니다."
+    return summary_service.get_or_build(company)
 
 
 def _normalize_filing(row: dict[str, Any]) -> dict[str, Any]:
@@ -421,12 +367,3 @@ def _normalize_filing(row: dict[str, Any]) -> dict[str, Any]:
         "raw_path": row.get("raw_path"),
         "cleaned_path": row.get("cleaned_path"),
     }
-
-
-def _format_krw(value: Any) -> str:
-    if value in (None, ""):
-        return "정보 없음"
-    try:
-        return f"{int(value):,}원"
-    except (TypeError, ValueError):
-        return str(value)

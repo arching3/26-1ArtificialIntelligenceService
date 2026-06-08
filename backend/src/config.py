@@ -8,6 +8,7 @@ logging.getLogger("dotenv.main").setLevel(logging.ERROR)
 load_dotenv(BASE_DIR / ".env")
 
 STORAGE_DIR = BASE_DIR / "storage"
+CACHE_DIR = BASE_DIR.parent / "cache"
 DB_PATH = STORAGE_DIR / "finance.db"
 COMPANIES_DIR = STORAGE_DIR / "companies"
 LOG_DIR = BASE_DIR / "logs"
@@ -32,6 +33,10 @@ EVENT_CHUNK_OVERLAP = 200
 def ensure_storage_dirs() -> None:
     STORAGE_DIR.mkdir(parents=True, exist_ok=True)
     COMPANIES_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def ensure_cache_dir() -> None:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def ensure_log_dir() -> None:

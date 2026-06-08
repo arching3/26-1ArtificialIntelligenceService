@@ -160,6 +160,17 @@ def init_db(db_path: Path | str = DB_PATH) -> None:
 
             CREATE INDEX IF NOT EXISTS idx_faiss_mappings_chunk
             ON faiss_mappings(chunk_id);
+
+            CREATE TABLE IF NOT EXISTS company_summaries (
+                stock_code TEXT PRIMARY KEY,
+                corp_name TEXT,
+                source_hash TEXT,
+                summary_json TEXT NOT NULL,
+                generated_by TEXT,
+                status TEXT,
+                error TEXT,
+                updated_at TEXT NOT NULL
+            );
             """
         )
         _ensure_column(conn, "financials", "report_kind", "TEXT")
@@ -634,6 +645,61 @@ def get_filing(receipt_no: str) -> Optional[Dict[str, Any]]:
     with _connect() as conn:
         row = conn.execute("SELECT * FROM filings WHERE receipt_no = ?", (receipt_no,)).fetchone()
     return dict(row) if row else None
+
+
+def get_company_summary(stock_code: str) -> Optional[Dict[str, Any]]:
+    init_db()
+    with _connect() as conn:
+        row = conn.execute("SELECT * FROM company_summaries WHERE stock_code = ?", (stock_code,)).fetchone()
+    if not row:
+        return None
+    item = dict(row)
+    try:
+        item["summary"] = json.loads(item.pop("summary_json") or "{}")
+    except json.JSONDecodeError:
+        item["summary"] = {}
+    return item
+
+
+def upsert_company_summary(
+    *,
+    stock_code: str,
+    corp_name: str,
+    source_hash: str,
+    summary: Dict[str, Any],
+    generated_by: str,
+    status: str,
+    error: str = "",
+) -> None:
+    init_db()
+    with _connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO company_summaries(
+                stock_code, corp_name, source_hash, summary_json,
+                generated_by, status, error, updated_at
+            )
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(stock_code) DO UPDATE SET
+                corp_name=excluded.corp_name,
+                source_hash=excluded.source_hash,
+                summary_json=excluded.summary_json,
+                generated_by=excluded.generated_by,
+                status=excluded.status,
+                error=excluded.error,
+                updated_at=excluded.updated_at
+            """,
+            (
+                stock_code,
+                corp_name,
+                source_hash,
+                _json_dumps(summary),
+                generated_by,
+                status,
+                error,
+                _now(),
+            ),
+        )
 
 
 def _inflate_chunk(row: sqlite3.Row) -> Dict[str, Any]:
