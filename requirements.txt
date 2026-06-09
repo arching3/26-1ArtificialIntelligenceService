@@ -18,3 +18,4 @@ pandas
 yfinance
 tenacity
 requests
+pyngrok

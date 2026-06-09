@@ -9,6 +9,7 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+
 # frontend 브랜치 변경: API 요청/응답 정규화 로직을 별도 모듈로 분리했습니다.
 from services.api_client import (
     fetch_companies as api_fetch_companies,
