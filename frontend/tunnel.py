@@ -7,7 +7,8 @@ import time
 from pathlib import Path
 
 from pyngrok import ngrok
-
+from dotenv import load_dotenv
+load_dotenv()
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Expose the Streamlit app through ngrok.")

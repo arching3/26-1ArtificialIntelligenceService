@@ -3,17 +3,32 @@ from __future__ import annotations
 import logging
 import os
 import re
+import time
 from typing import Any, Dict, Iterable, List, Optional
 
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from .config import EVENT_INDEX, LLM_MODEL, REGULAR_INDEX
+from .config import (
+    EVENT_INDEX,
+    LLM_MODEL,
+    QUERY_ANALYZER_MODE,
+    QUERY_ANALYZER_MODEL,
+    QUERY_ANALYZER_TIMEOUT_SECONDS,
+    REGULAR_INDEX,
+)
 from .finance_store import compare_metric, get_active_chunks, get_chunks_by_ids, get_financials, get_recent_events
 from .index_manager import search_chunk_ids
+from .query_analysis import get_query_analyzer
+from .retrieval_planner import plan_retrieval
 
 logger = logging.getLogger(__name__)
+_QUERY_ANALYZER = get_query_analyzer(
+    mode=QUERY_ANALYZER_MODE,
+    model=QUERY_ANALYZER_MODEL,
+    timeout=QUERY_ANALYZER_TIMEOUT_SECONDS,
+)
 
 METRIC_ALIASES = {
     "revenue": ["매출액", "매출", "영업수익", "수익"],
@@ -68,6 +83,9 @@ Context:
 {context}
 """.strip()
 
+PLAIN_SYSTEM_PROMPT = """
+""".strip()
+
 
 def extract_business_year(query: str) -> Optional[int]:
     matches = re.findall(r"(20\d{2})\s*년?", query or "")
@@ -89,11 +107,7 @@ def extract_amounts(query: str) -> List[int]:
 
 
 def extract_stock_codes(query: str) -> List[str]:
-    found: List[str] = []
-    for code in re.findall(r"\b\d{6}\b", query or ""):
-        if code not in found:
-            found.append(code)
-    return found
+    return _QUERY_ANALYZER.analyze(query).stock_codes
 
 
 def extract_metric(query: str) -> Optional[str]:
@@ -116,41 +130,31 @@ def extract_event_types(query: str) -> List[str]:
 
 
 def route_query(query: str) -> Dict[str, Any]:
-    text = query or ""
-    stock_codes = extract_stock_codes(text)
-    metric = extract_metric(text)
-    event_types = extract_event_types(text)
-    has_comparison = len(stock_codes) >= 2 and any(keyword in text for keyword in COMPARISON_KEYWORDS)
-    has_financial = metric is not None or "이익률" in text
-    has_event = any(keyword in text for keyword in EVENT_KEYWORDS)
-    has_risk = any(keyword in text for keyword in RISK_KEYWORDS)
-    has_business = any(keyword in text for keyword in BUSINESS_KEYWORDS)
-
-    if has_comparison and has_financial:
-        intent = "comparison"
-    elif has_financial:
-        intent = "financial_numeric"
-    elif has_event:
-        intent = "event_disclosure"
-    elif has_risk:
-        intent = "risk_analysis"
-    elif has_business:
-        intent = "business_text"
-    else:
-        intent = "unknown"
-
+    started = time.perf_counter()
+    analysis = _QUERY_ANALYZER.analyze(query)
+    plan = plan_retrieval(analysis)
+    analysis_ms = round((time.perf_counter() - started) * 1000, 2)
+    logger.info(
+        "query_analysis_complete mode=%s intent=%s intents=%s scope=%s analysis_ms=%s",
+        QUERY_ANALYZER_MODE,
+        analysis.intent,
+        analysis.intents,
+        analysis.scope,
+        analysis_ms,
+    )
     return {
-        "intent": intent,
-        "company_codes": stock_codes,
-        "stock_codes": stock_codes,
-        "business_year": extract_business_year(text),
-        "metric": metric,
-        "event_types": event_types,
-        "amounts": extract_amounts(text),
+        **analysis.model_dump(),
+        **plan.model_dump(),
+        "amounts": extract_amounts(query),
+        "analyzer_mode": QUERY_ANALYZER_MODE,
+        "analysis_ms": analysis_ms,
     }
 
 
 def index_types_for_query(query_info: Dict) -> List[str]:
+    planned = query_info.get("index_types")
+    if planned is not None:
+        return list(planned)
     intent = query_info.get("intent")
     if intent == "event_disclosure":
         return [EVENT_INDEX]
@@ -167,14 +171,16 @@ def retrieve_context_documents(
 ) -> Dict[str, object]:
     query_info = query_info or route_query(query)
     routed_codes = query_info.get("company_codes") or []
-    codes = list(routed_codes or stock_codes or [])
+    codes = list(dict.fromkeys([*routed_codes, *(stock_codes or [])]))
     if not codes:
         logger.info("retrieve_skipped_no_stock_codes intent=%s", query_info.get("intent"))
         return {"query_info": query_info, "documents": [], "missing_indexes": []}
 
     index_types = index_types_for_query(query_info)
     intent = query_info.get("intent")
-    search_k = k * 4 if intent in {"risk_analysis", "financial_numeric", "comparison", "event_disclosure"} else k
+    search_k = int(query_info.get("candidate_count") or (
+        k * 4 if intent in {"risk_analysis", "financial_numeric", "comparison", "event_disclosure"} else k
+    ))
     chunk_ids: List[int] = []
     missing_indexes = []
     logger.info("retrieve_start intent=%s stock_codes=%s index_types=%s k=%s search_k=%s", intent, codes, index_types, k, search_k)
@@ -270,6 +276,31 @@ def answer_question(question: str, stock_codes: list[str]) -> dict[str, Any]:
     }
 
 
+def answer_question_without_rag(question: str, company_name: str = "") -> str:
+    question = str(question or "").strip()
+    if not question:
+        return "질문을 입력해 주세요."
+    if _is_unsupported(question):
+        return (
+            "주가 예측, 매수/매도 판단, 목표가 제시, 포트폴리오 조언은 제공하지 않습니다. "
+            "대신 기업의 사업, 실적, 리스크를 이해하기 위한 일반적인 체크 포인트를 정리할 수 있습니다."
+        )
+    if not os.getenv("OPENAI_API_KEY"):
+        return "OPENAI_API_KEY가 없어 순수 LLM 답변을 생성할 수 없습니다."
+
+    target = str(company_name or "").strip()
+    user_prompt = f"분석 대상 기업: {target}\n질문: {question}" if target else question
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", PLAIN_SYSTEM_PROMPT),
+            ("human", "{question}"),
+        ]
+    )
+    llm = ChatOpenAI(model=LLM_MODEL, temperature=0)
+    response = llm.invoke(prompt.format_messages(question=user_prompt))
+    return str(getattr(response, "content", response))
+
+
 def _chunk_to_document(chunk: Dict) -> Document:
     metadata = dict(chunk.get("metadata") or {})
     metadata.update(
@@ -310,17 +341,20 @@ def _as_int(value: object) -> Optional[int]:
 
 def _sort_documents_for_query(documents: List[Document], query: str, query_info: Dict, k: int) -> List[Document]:
     intent = query_info.get("intent")
-    desired_report_code = _desired_report_code(query)
+    intents = set(query_info.get("intents") or [intent])
+    desired_report_code = query_info.get("report_code") or _desired_report_code(query)
     desired_year = query_info.get("business_year")
     desired_event_types = set(query_info.get("event_types") or [])
+    preferred_data_types = list(query_info.get("preferred_data_types") or [])
+    data_type_rank = {data_type: index for index, data_type in enumerate(preferred_data_types)}
 
-    def financial_key(document: Document) -> tuple[int, int, int]:
+    def metadata_key(document: Document) -> tuple[int, int, int]:
         metadata = document.metadata
-        is_structured = metadata.get("data_type") == "structured_financials"
+        data_type = str(metadata.get("data_type") or "")
         report_code = metadata.get("report_code") or ""
         business_year = _as_int(metadata.get("business_year"))
         return (
-            0 if is_structured else 1,
+            data_type_rank.get(data_type, len(data_type_rank)),
             0 if desired_report_code and report_code == desired_report_code else 1,
             0 if desired_year and business_year == desired_year else 1,
         )
@@ -334,14 +368,16 @@ def _sort_documents_for_query(documents: List[Document], query: str, query_info:
             str(metadata.get("receipt_date") or ""),
         )
 
-    if intent in {"financial_numeric", "comparison"}:
-        return sorted(documents, key=financial_key)[:k]
-    if intent == "event_disclosure":
+    if intent in {"financial_numeric", "comparison"} and len(intents) == 1:
+        return sorted(documents, key=metadata_key)[:k]
+    if intent == "event_disclosure" and len(intents) == 1:
         return sorted(documents, key=event_key, reverse=not desired_event_types)[:k]
-    if intent == "risk_analysis":
+    if intent == "risk_analysis" and len(intents) == 1:
         risk_documents = [document for document in documents if document.metadata.get("data_type") == "risk_text"]
         other_documents = [document for document in documents if document.metadata.get("data_type") != "risk_text"]
         return (risk_documents + other_documents)[:k]
+    if preferred_data_types or desired_report_code or desired_year:
+        return sorted(documents, key=metadata_key)[:k]
     return documents[:k]
 
 
@@ -351,6 +387,12 @@ def _is_unsupported(question: str) -> bool:
 
 def _route_name(query_info: dict[str, Any]) -> str:
     intent = query_info.get("intent")
+    index_types = set(query_info.get("index_types") or [])
+    scope = query_info.get("scope")
+    if index_types == {REGULAR_INDEX, EVENT_INDEX}:
+        return "both"
+    if scope in {"segment", "product", "region"} and REGULAR_INDEX in index_types:
+        return "raw_filing_rag"
     if intent in {"financial_numeric", "comparison"}:
         return "structured_api"
     if intent in {"business_text", "risk_analysis"}:
@@ -362,21 +404,39 @@ def _route_name(query_info: dict[str, Any]) -> str:
 
 def _sql_context(query_info: dict[str, Any], stock_codes: list[str]) -> str:
     intent = query_info.get("intent")
-    metric = query_info.get("metric")
+    intents = set(query_info.get("intents") or [intent])
+    metrics = list(query_info.get("metrics") or ([query_info.get("metric")] if query_info.get("metric") else []))
+    metric = metrics[0] if metrics else None
     business_year = query_info.get("business_year")
+    report_code = query_info.get("report_code")
+    use_financial_sql = query_info.get("use_financial_sql")
+    if use_financial_sql is None:
+        use_financial_sql = intent in {"financial_numeric", "comparison"}
+    use_event_sql = query_info.get("use_event_sql")
+    if use_event_sql is None:
+        use_event_sql = intent == "event_disclosure"
     lines = []
 
-    if intent == "comparison" and metric and len(stock_codes) >= 2:
-        rows = compare_metric(stock_codes, metric, business_year=business_year)
+    if use_financial_sql and "comparison" in intents and metric and len(stock_codes) >= 2:
+        rows = compare_metric(
+            stock_codes,
+            metric,
+            business_year=business_year,
+            report_code=report_code,
+        )
         for rank, row in enumerate(rows, start=1):
             lines.append(
                 f"[SQLite 정형 재무 비교] {rank}. {row.get('corp_name') or row.get('stock_code')} "
                 f"{metric}={_format_krw(row.get(metric))}, 사업연도={row.get('business_year')}, "
                 f"보고서={row.get('report_name')}, 접수번호={row.get('receipt_no')}"
             )
-    elif intent in {"financial_numeric", "comparison"}:
+    elif use_financial_sql:
         for code in stock_codes:
-            row = get_financials(code, business_year=business_year)
+            row = get_financials(
+                code,
+                business_year=business_year,
+                report_code=report_code,
+            )
             if row:
                 lines.append(
                     "[SQLite 정형 재무]\n"
@@ -389,7 +449,7 @@ def _sql_context(query_info: dict[str, Any], stock_codes: list[str]) -> str:
                     f"보고서: {row.get('report_name')}\n"
                     f"접수번호: {row.get('receipt_no')}"
                 )
-    elif intent == "event_disclosure":
+    if use_event_sql:
         event_types = query_info.get("event_types") or [None]
         for code in stock_codes:
             for event_type in event_types:

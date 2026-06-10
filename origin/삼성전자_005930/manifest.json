@@ -1,0 +1,74 @@
+{
+  "company_name": "삼성전자",
+  "stock_code": "005930",
+  "created_at": "2026-06-11T00:30:34+09:00",
+  "filing_count": 6,
+  "filings": [
+    {
+      "receipt_no": "20250814003156",
+      "receipt_date": "20250814",
+      "report_name": "반기보고서 (2025.06)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20250814003156.xml",
+      "size_bytes": 6135899,
+      "sha256": "958d4157d11ec3fa0feb6f6e8b75333f3d3e07a996571ff55689c7c04077c9e2",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250814003156"
+    },
+    {
+      "receipt_no": "20251114002447",
+      "receipt_date": "20251114",
+      "report_name": "분기보고서 (2025.09)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20251114002447.xml",
+      "size_bytes": 5037331,
+      "sha256": "a81621acfb3fb0c7fd00912268395b32573de2547ca4586e491df5765dedb785",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20251114002447"
+    },
+    {
+      "receipt_no": "20260310002820",
+      "receipt_date": "20260310",
+      "report_name": "사업보고서 (2025.12)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20260310002820.xml",
+      "size_bytes": 8266498,
+      "sha256": "107f3645e46dcd5af1ba7613d5480304c1ceaa98a89ac3a70fd113d23365d163",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+    },
+    {
+      "receipt_no": "20260318001062",
+      "receipt_date": "20260318",
+      "report_name": "주요사항보고서(자기주식취득결정)",
+      "filing_type": "event",
+      "index_type": "event",
+      "file": "20260318001062.xml",
+      "size_bytes": 35044,
+      "sha256": "935ecf28f73f6fb3913b5c5e2d0ce6d4f80c4978075c9ff8c7664aa87b630835",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001062"
+    },
+    {
+      "receipt_no": "20260318001203",
+      "receipt_date": "20260318",
+      "report_name": "주요사항보고서(자기주식처분결정)",
+      "filing_type": "event",
+      "index_type": "event",
+      "file": "20260318001203.xml",
+      "size_bytes": 31323,
+      "sha256": "4fa32846a89de3a3fe673a4a1a87ad4d1ccb022e41d01d51e32531a0f338566f",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001203"
+    },
+    {
+      "receipt_no": "20260515002181",
+      "receipt_date": "20260515",
+      "report_name": "분기보고서 (2026.03)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20260515002181.xml",
+      "size_bytes": 4652615,
+      "sha256": "ee59c87d94c651c7379866ab2a4ed3d0b67ca211579500f83201d5aff47c7894",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515002181"
+    }
+  ]
+}

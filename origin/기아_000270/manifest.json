@@ -1,0 +1,63 @@
+{
+  "company_name": "기아",
+  "stock_code": "000270",
+  "created_at": "2026-06-11T00:30:34+09:00",
+  "filing_count": 5,
+  "filings": [
+    {
+      "receipt_no": "20250814003814",
+      "receipt_date": "20250814",
+      "report_name": "반기보고서 (2025.06)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20250814003814.xml",
+      "size_bytes": 4476995,
+      "sha256": "1900f1a56632329fbffff49c860bcd657a496114922d0c5b19485258c879bf11",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250814003814"
+    },
+    {
+      "receipt_no": "20251114002676",
+      "receipt_date": "20251114",
+      "report_name": "분기보고서 (2025.09)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20251114002676.xml",
+      "size_bytes": 3821534,
+      "sha256": "7b8f6d4bd80bb2569247e963f5bb10292376d7770d077947af07bf9cec6fd01b",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20251114002676"
+    },
+    {
+      "receipt_no": "20260312001224",
+      "receipt_date": "20260312",
+      "report_name": "사업보고서 (2025.12)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20260312001224.xml",
+      "size_bytes": 6021505,
+      "sha256": "0e6a6af51b2d97e9ed10f9e487043ef15ff3095a8636c2b7789cbdc2e4c4b32f",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001224"
+    },
+    {
+      "receipt_no": "20260320001182",
+      "receipt_date": "20260320",
+      "report_name": "주요사항보고서(자기주식처분결정)",
+      "filing_type": "event",
+      "index_type": "event",
+      "file": "20260320001182.xml",
+      "size_bytes": 31364,
+      "sha256": "a41b044c1e4c577f2cd95b0379ca4ba426275fff04163bf1e7a42807e8bc4bb3",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001182"
+    },
+    {
+      "receipt_no": "20260515002675",
+      "receipt_date": "20260515",
+      "report_name": "분기보고서 (2026.03)",
+      "filing_type": "regular",
+      "index_type": "regular",
+      "file": "20260515002675.xml",
+      "size_bytes": 3265105,
+      "sha256": "c653074e1d6383ba9e8caf3b70c37690677c7239fdf0f26f9c7fd84276ab69bb",
+      "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515002675"
+    }
+  ]
+}

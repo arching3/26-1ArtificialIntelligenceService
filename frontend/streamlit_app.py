@@ -359,12 +359,48 @@ def send_chat(prompt: str, company_name: str) -> None:
         },
     )
     if not ok:
-        answer = API_RETRY_MESSAGE
+        rag_answer = API_RETRY_MESSAGE
+        plain_answer = API_RETRY_MESSAGE
         logger.warning("frontend_chat_failed company=%s prompt_chars=%s error=%s", company_name, len(prompt), error)
     else:
-        answer = data.get("answer", "답변 필드가 비어 있습니다.") if isinstance(data, dict) else str(data)
-        logger.info("frontend_chat_answer_ready company=%s prompt_chars=%s answer_chars=%s", company_name, len(prompt), len(answer))
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+        if isinstance(data, dict):
+            rag_answer = data.get("rag_answer") or data.get("answer") or "RAG 답변 필드가 비어 있습니다."
+            plain_answer = data.get("plain_answer") or "순수 LLM 답변 필드가 비어 있습니다."
+        else:
+            rag_answer = str(data)
+            plain_answer = "순수 LLM 답변 필드가 비어 있습니다."
+        logger.info(
+            "frontend_chat_answers_ready company=%s prompt_chars=%s rag_answer_chars=%s plain_answer_chars=%s",
+            company_name,
+            len(prompt),
+            len(rag_answer),
+            len(plain_answer),
+        )
+    st.session_state.messages.append(
+        {
+            "role": "assistant",
+            "rag_answer": rag_answer,
+            "plain_answer": plain_answer,
+        }
+    )
+
+
+def render_chat_message(message: dict[str, Any]) -> None:
+    role = message.get("role", "assistant")
+    with st.chat_message(role):
+        if role != "assistant" or "rag_answer" not in message:
+            st.write(message.get("content", ""))
+            return
+
+        rag_column, plain_column = st.columns(2, gap="medium")
+        with rag_column:
+            st.markdown('<div class="chat-answer-label rag-label">RAG 챗봇</div>', unsafe_allow_html=True)
+            with st.container(border=True):
+                st.write(message.get("rag_answer", ""))
+        with plain_column:
+            st.markdown('<div class="chat-answer-label plain-label">순수 챗봇</div>', unsafe_allow_html=True)
+            with st.container(border=True):
+                st.write(message.get("plain_answer", ""))
 
 
 def merge_stock_frames(*frames: pd.DataFrame) -> pd.DataFrame:
@@ -653,8 +689,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+    render_chat_message(message)
 
 prompt = st.chat_input("예: 최근 사업보고서 기준으로 투자 리스크를 요약해줘")
 if prompt and prompt.strip():

@@ -1,0 +1,24 @@
+{
+  "basis": "inspect.md 조사 시점의 finance.db filings 레코드",
+  "created_at": "2026-06-11T00:30:34+09:00",
+  "companies": [
+    {
+      "company_name": "삼성전자",
+      "stock_code": "005930",
+      "directory": "삼성전자_005930",
+      "filing_count": 6
+    },
+    {
+      "company_name": "기아",
+      "stock_code": "000270",
+      "directory": "기아_000270",
+      "filing_count": 5
+    },
+    {
+      "company_name": "현대자동차",
+      "stock_code": "005380",
+      "directory": "현대자동차_005380",
+      "filing_count": 5
+    }
+  ]
+}

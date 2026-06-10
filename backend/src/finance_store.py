@@ -563,37 +563,60 @@ def replace_faiss_mappings(stock_code: str, index_type: str, vector_to_chunk: It
         )
 
 
-def get_financials(stock_code: str, business_year: Optional[int] = None) -> Optional[Dict[str, Any]]:
+def get_financials(
+    stock_code: str,
+    business_year: Optional[int] = None,
+    report_code: Optional[str] = None,
+    period_month: Optional[int] = None,
+) -> Optional[Dict[str, Any]]:
     init_db()
+    params: List[Any] = [stock_code]
+    where = "WHERE stock_code = ?"
+    if business_year is not None:
+        where += " AND business_year = ?"
+        params.append(int(business_year))
+    if report_code is not None:
+        where += " AND report_code = ?"
+        params.append(report_code)
+    if period_month is not None:
+        where += " AND period_month = ?"
+        params.append(int(period_month))
+
     with _connect() as conn:
-        if business_year is not None:
-            row = conn.execute(
-                """
-                SELECT * FROM financials
-                WHERE stock_code = ? AND business_year = ?
-                ORDER BY receipt_date DESC, updated_at DESC
-                LIMIT 1
-                """,
-                (stock_code, int(business_year)),
-            ).fetchone()
-        else:
-            row = conn.execute(
-                """
-                SELECT * FROM financials
-                WHERE stock_code = ?
-                ORDER BY business_year DESC, receipt_date DESC, updated_at DESC
-                LIMIT 1
-                """,
-                (stock_code,),
-            ).fetchone()
+        row = conn.execute(
+            f"""
+            SELECT * FROM financials
+            {where}
+            ORDER BY business_year DESC, receipt_date DESC, updated_at DESC
+            LIMIT 1
+            """,
+            params,
+        ).fetchone()
     return dict(row) if row else None
 
 
-def compare_metric(stock_codes: Iterable[str], metric: str, business_year: Optional[int] = None) -> List[Dict[str, Any]]:
+def compare_metric(
+    stock_codes: Iterable[str],
+    metric: str,
+    business_year: Optional[int] = None,
+    report_code: Optional[str] = None,
+    period_month: Optional[int] = None,
+) -> List[Dict[str, Any]]:
     column = METRIC_COLUMNS.get(metric)
     if not column:
         raise ValueError(f"Unsupported metric: {metric}")
-    rows = [row for code in stock_codes if (row := get_financials(code, business_year=business_year))]
+    rows = [
+        row
+        for code in stock_codes
+        if (
+            row := get_financials(
+                code,
+                business_year=business_year,
+                report_code=report_code,
+                period_month=period_month,
+            )
+        )
+    ]
     return sorted(rows, key=lambda item: item.get(column) if item.get(column) is not None else float("-inf"), reverse=True)
 
 

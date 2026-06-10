@@ -35,7 +35,7 @@ PERIOD_MAP = {
     "최근 3년": StockPeriod("3y", "1wk"),
     "전체": StockPeriod("max", "1mo"),
 }
-DEFAULT_PERIOD = StockPeriod("7d", "1d")
+DEFAULT_PERIOD = StockPeriod("1mo", "1d")
 REALTIME_PERIOD = StockPeriod("1d", "1m")
 
 

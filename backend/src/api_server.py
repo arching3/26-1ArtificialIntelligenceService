@@ -20,7 +20,7 @@ from .finance_store import (
 )
 from .logging_config import configure_logging
 from .pipeline import rebuild_company_indexes
-from .rag_service import answer_question
+from .rag_service import answer_question, answer_question_without_rag
 from .summary_service import SummaryService
 from .stock_service import fetch_realtime_stock, fetch_stock_history
 
@@ -257,12 +257,37 @@ def chat(payload: ChatRequest) -> dict[str, Any]:
     company = resolve_company(company_value) if company_value else None
     stock_codes = [company.stock_code] if company else []
     logger.info("chat_request company_value=%r resolved_stock_codes=%s question_chars=%s", company_value, stock_codes, len(question))
-    result = answer_question(question, stock_codes=stock_codes)
+
+    try:
+        result = answer_question(question, stock_codes=stock_codes)
+    except Exception:
+        logger.exception("rag_chat_failed stock_codes=%s question_chars=%s", stock_codes, len(question))
+        result = {
+            "answer": "RAG 답변을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+            "sources": [],
+            "query_info": {},
+            "route": "error",
+            "missing_indexes": [],
+        }
+
+    try:
+        plain_answer = answer_question_without_rag(
+            question,
+            company_name=company.corp_name if company else company_value,
+        )
+    except Exception:
+        logger.exception("plain_chat_failed company_value=%r question_chars=%s", company_value, len(question))
+        plain_answer = "순수 LLM 답변을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요."
+
+    result["rag_answer"] = result.get("answer", "")
+    result["plain_answer"] = plain_answer
     logger.info(
-        "chat_response route=%s source_count=%s missing_indexes=%s",
+        "chat_response route=%s source_count=%s missing_indexes=%s rag_answer_chars=%s plain_answer_chars=%s",
         result.get("route"),
         len(result.get("sources") or []),
         result.get("missing_indexes") or [],
+        len(result["rag_answer"]),
+        len(result["plain_answer"]),
     )
     return result
 

@@ -412,6 +412,23 @@ div[role="dialog"] .stButton > button {
   color: #ffffff;
   font-weight: 950;
 }
+.chat-answer-label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 8px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+.rag-label {
+  background: #eaf8ee;
+  color: var(--dl-green-deep);
+}
+.plain-label {
+  background: #eef2f6;
+  color: #45515f;
+}
 @media (max-width: 720px) {
   .hero {
     text-align: left;

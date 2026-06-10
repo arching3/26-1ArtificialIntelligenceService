@@ -9,9 +9,13 @@ BACKEND_STDOUT_LOG="$PROCESS_LOG_DIR/backend.out.log"
 BACKEND_STDERR_LOG="$PROCESS_LOG_DIR/backend.err.log"
 FRONTEND_STDOUT_LOG="$PROCESS_LOG_DIR/frontend.out.log"
 FRONTEND_STDERR_LOG="$PROCESS_LOG_DIR/frontend.err.log"
+TUNNEL_STDOUT_LOG="$PROCESS_LOG_DIR/tunnel.out.log"
+TUNNEL_STDERR_LOG="$PROCESS_LOG_DIR/tunnel.err.log"
+TUNNEL_URL_FILE="$PROCESS_LOG_DIR/ngrok-url.txt"
 
 BACKEND_SESSION="ai_service_backend"
 FRONTEND_SESSION="ai_service_frontend"
+TUNNEL_SESSION="ai_service_tunnel"
 MONITOR_SESSION="ai_service_monitor"
 OUTPUT_MONITOR_SESSION="ai_service_output_monitor"
 
@@ -22,12 +26,13 @@ FRONTEND_PORT="${FRONTEND_PORT:-8501}"
 
 BACKEND_CMD="uvicorn backend.src.api_server:app --host $BACKEND_HOST --port $BACKEND_PORT --reload"
 FRONTEND_CMD="streamlit run frontend/streamlit_app.py --server.address $FRONTEND_HOST --server.port $FRONTEND_PORT"
-MONITOR_CMD="tail -F backend/logs/error.log backend/logs/backend.err.log backend/logs/frontend.err.log"
-OUTPUT_MONITOR_CMD="tail -F backend/logs/backend.out.log backend/logs/frontend.out.log"
+TUNNEL_CMD="python frontend/tunnel.py --port $FRONTEND_PORT --url-file backend/logs/ngrok-url.txt"
+MONITOR_CMD="tail -F backend/logs/error.log backend/logs/backend.err.log backend/logs/frontend.err.log backend/logs/tunnel.err.log"
+OUTPUT_MONITOR_CMD="tail -F backend/logs/backend.out.log backend/logs/frontend.out.log backend/logs/tunnel.out.log"
 
 usage() {
   cat <<EOF
-Usage: ./run.sh [start|stop|restart|status|attach-backend|attach-frontend|attach-monitor|attach-output]
+Usage: ./run.sh [start|stop|restart|status|attach-backend|attach-frontend|attach-tunnel|attach-monitor|attach-output]
 
 Starts the DART RAG app from:
   $APP_DIR
@@ -35,8 +40,9 @@ Starts the DART RAG app from:
 Screen sessions:
   $BACKEND_SESSION   - FastAPI backend
   $FRONTEND_SESSION  - Streamlit frontend
-  $MONITOR_SESSION   - tail -F backend/logs/error.log backend/logs/backend.err.log backend/logs/frontend.err.log
-  $OUTPUT_MONITOR_SESSION - tail -F backend/logs/backend.out.log backend/logs/frontend.out.log
+  $TUNNEL_SESSION    - ngrok tunnel for Streamlit
+  $MONITOR_SESSION   - tail -F backend/logs/error.log backend/logs/backend.err.log backend/logs/frontend.err.log backend/logs/tunnel.err.log
+  $OUTPUT_MONITOR_SESSION - tail -F backend/logs/backend.out.log backend/logs/frontend.out.log backend/logs/tunnel.out.log
 EOF
 }
 
@@ -50,6 +56,32 @@ require_screen() {
 session_exists() {
   local session_name="$1"
   screen -list | grep -q "[.]${session_name}[[:space:]]"
+}
+
+print_tunnel_url() {
+  if [[ -s "$TUNNEL_URL_FILE" ]]; then
+    echo "Public frontend: $(<"$TUNNEL_URL_FILE")"
+    return 0
+  fi
+  return 1
+}
+
+wait_for_tunnel_url() {
+  local attempts=30
+  local attempt
+
+  for ((attempt = 1; attempt <= attempts; attempt++)); do
+    if print_tunnel_url; then
+      return 0
+    fi
+    if ! session_exists "$TUNNEL_SESSION"; then
+      break
+    fi
+    sleep 0.5
+  done
+
+  echo "Public frontend: unavailable (see $TUNNEL_STDERR_LOG)"
+  return 1
 }
 
 lan_ips() {
@@ -98,9 +130,9 @@ find_venv_activate() {
 shell_prefix() {
   local activate_file
   if activate_file="$(find_venv_activate)"; then
-    printf "cd %q && mkdir -p backend/logs && touch backend/logs/app.log backend/logs/error.log backend/logs/backend.out.log backend/logs/backend.err.log backend/logs/frontend.out.log backend/logs/frontend.err.log && export PYTHONUNBUFFERED=1 && source %q" "$APP_DIR" "$activate_file"
+    printf "cd %q && mkdir -p backend/logs && touch backend/logs/app.log backend/logs/error.log backend/logs/backend.out.log backend/logs/backend.err.log backend/logs/frontend.out.log backend/logs/frontend.err.log backend/logs/tunnel.out.log backend/logs/tunnel.err.log && export PYTHONUNBUFFERED=1 && source %q" "$APP_DIR" "$activate_file"
   else
-    printf "cd %q && mkdir -p backend/logs && touch backend/logs/app.log backend/logs/error.log backend/logs/backend.out.log backend/logs/backend.err.log backend/logs/frontend.out.log backend/logs/frontend.err.log && export PYTHONUNBUFFERED=1 && echo 'warning: no virtualenv found within 2 levels up/down; using current shell environment' >&2" "$APP_DIR"
+    printf "cd %q && mkdir -p backend/logs && touch backend/logs/app.log backend/logs/error.log backend/logs/backend.out.log backend/logs/backend.err.log backend/logs/frontend.out.log backend/logs/frontend.err.log backend/logs/tunnel.out.log backend/logs/tunnel.err.log && export PYTHONUNBUFFERED=1 && echo 'warning: no virtualenv found within 2 levels up/down; using current shell environment' >&2" "$APP_DIR"
   fi
 }
 
@@ -138,12 +170,17 @@ start_all() {
 
   start_session "$BACKEND_SESSION" "$BACKEND_CMD >>backend/logs/backend.out.log 2>>backend/logs/backend.err.log"
   start_session "$FRONTEND_SESSION" "$FRONTEND_CMD >>backend/logs/frontend.out.log 2>>backend/logs/frontend.err.log"
+  if ! session_exists "$TUNNEL_SESSION"; then
+    rm -f "$TUNNEL_URL_FILE"
+  fi
+  start_session "$TUNNEL_SESSION" "$TUNNEL_CMD >>backend/logs/tunnel.out.log 2>>backend/logs/tunnel.err.log"
   start_session "$MONITOR_SESSION" "$MONITOR_CMD"
   start_session "$OUTPUT_MONITOR_SESSION" "$OUTPUT_MONITOR_CMD"
 
   echo
   echo "Local backend:   http://127.0.0.1:$BACKEND_PORT"
   echo "Local frontend:  http://127.0.0.1:$FRONTEND_PORT"
+  wait_for_tunnel_url || true
   echo
   echo "WSL internal access URLs:"
   local ip_addr
@@ -167,6 +204,8 @@ start_all() {
   echo "  backend stderr:  $BACKEND_STDERR_LOG"
   echo "  frontend stdout: $FRONTEND_STDOUT_LOG"
   echo "  frontend stderr: $FRONTEND_STDERR_LOG"
+  echo "  tunnel stdout:   $TUNNEL_STDOUT_LOG"
+  echo "  tunnel stderr:   $TUNNEL_STDERR_LOG"
 }
 
 print_windows_proxy_commands() {
@@ -197,13 +236,16 @@ stop_all() {
   require_screen
   stop_session "$OUTPUT_MONITOR_SESSION"
   stop_session "$MONITOR_SESSION"
+  stop_session "$TUNNEL_SESSION"
   stop_session "$FRONTEND_SESSION"
   stop_session "$BACKEND_SESSION"
+  rm -f "$TUNNEL_URL_FILE"
 }
 
 status_all() {
   require_screen
-  screen -list | grep -E "(${BACKEND_SESSION}|${FRONTEND_SESSION}|${MONITOR_SESSION}|${OUTPUT_MONITOR_SESSION})" || true
+  screen -list | grep -E "(${BACKEND_SESSION}|${FRONTEND_SESSION}|${TUNNEL_SESSION}|${MONITOR_SESSION}|${OUTPUT_MONITOR_SESSION})" || true
+  print_tunnel_url || echo "Public frontend: unavailable"
 }
 
 attach_session() {
@@ -235,6 +277,9 @@ case "${1:-start}" in
     ;;
   attach-frontend)
     attach_session "$FRONTEND_SESSION"
+    ;;
+  attach-tunnel)
+    attach_session "$TUNNEL_SESSION"
     ;;
   attach-monitor)
     attach_session "$MONITOR_SESSION"

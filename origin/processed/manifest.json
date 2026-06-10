@@ -1,0 +1,58 @@
+{
+  "created_at": "2026-06-11T00:36:09+09:00",
+  "source": "origin/manifest.json",
+  "algorithm": {
+    "regular": "parse_filing_document -> extract_business_sections -> chunk_business_sections -> build_regular_chunk_records(include_structured=False)",
+    "regular_fallback": "extract_business_section -> chunk_business_text",
+    "event": "_clean_event_text -> _event_chunk_records"
+  },
+  "excluded_steps": [
+    "DART finstate/event API 정형 데이터 추가 조회",
+    "SQLite filings/financials/events/chunks 저장",
+    "OpenAI embedding 생성",
+    "FAISS index 생성"
+  ],
+  "indexed": false,
+  "database_written": false,
+  "companies": [
+    {
+      "company_name": "삼성전자",
+      "stock_code": "005930",
+      "directory": "삼성전자_005930",
+      "filing_count": 6,
+      "chunk_count": 503,
+      "data_type_counts": {
+        "business_text": 147,
+        "table_text": 315,
+        "risk_text": 37,
+        "event_text": 4
+      }
+    },
+    {
+      "company_name": "기아",
+      "stock_code": "000270",
+      "directory": "기아_000270",
+      "filing_count": 5,
+      "chunk_count": 398,
+      "data_type_counts": {
+        "business_text": 110,
+        "table_text": 242,
+        "risk_text": 45,
+        "event_text": 1
+      }
+    },
+    {
+      "company_name": "현대자동차",
+      "stock_code": "005380",
+      "directory": "현대자동차_005380",
+      "filing_count": 5,
+      "chunk_count": 489,
+      "data_type_counts": {
+        "business_text": 223,
+        "table_text": 214,
+        "risk_text": 50,
+        "event_text": 2
+      }
+    }
+  ]
+}

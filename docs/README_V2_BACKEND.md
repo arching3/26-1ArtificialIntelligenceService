@@ -33,6 +33,19 @@ OPENAI_API_KEY=...
 `DART_API_KEY`가 없으면 서버는 실행되지만 신규 인덱싱 작업은 `failed` 상태가 됩니다.
 `OPENAI_API_KEY`가 없으면 인덱스 재생성과 LLM 답변 생성이 불가능합니다.
 
+질의 분석기 설정:
+
+```dotenv
+QUERY_ANALYZER_MODE=rules
+QUERY_ANALYZER_MODEL=gpt-4o-mini
+QUERY_ANALYZER_TIMEOUT_SECONDS=5
+```
+
+- `QUERY_ANALYZER_MODE`: `rules`는 규칙 기반 분석만, `llm`은 LLM 분석을, `hybrid`는 규칙과 LLM 분석을 함께 사용합니다. 기본값과 잘못된 값의 fallback은 `rules`입니다.
+- `QUERY_ANALYZER_MODEL`: 질의 분석에 사용할 모델이며 기본값은 백엔드 기본 LLM 모델입니다.
+- `QUERY_ANALYZER_TIMEOUT_SECONDS`: LLM 질의 분석 제한 시간(초)이며 기본값은 `5`입니다. 0 이하이거나 숫자가 아니면 기본값을 사용합니다.
+- LLM 분석이 비활성화되었거나 API 키 누락, timeout, 호출 오류가 발생하면 규칙 기반 분석으로 fallback합니다.
+
 ## API
 
 ```http

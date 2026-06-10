@@ -1,5 +1,6 @@
 streamlit
 fastapi
+pydantic>=2
 uvicorn[standard]
 python-dotenv
 openai
