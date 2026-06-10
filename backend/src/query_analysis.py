@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from typing import Any, List, Literal, Optional, Protocol
 
 from langchain_openai import ChatOpenAI
@@ -144,6 +145,11 @@ class QueryAnalyzer(Protocol):
 class RuleBasedQueryAnalyzer:
     def analyze(self, query: str) -> QueryAnalysis:
         text = str(query or "").strip()
+        start = time.perf_counter()
+        logger.info(
+            "Rules query analysis started | %s",
+            _analysis_log_context(text, "rules"),
+        )
         company_codes = _extract_stock_codes(text)
         years = _extract_business_years(text)
         report_codes = _extract_report_codes(text)
@@ -153,8 +159,7 @@ class RuleBasedQueryAnalyzer:
         scope = _extract_scope(text)
         intents = _extract_intents(text, company_codes, metrics, event_types)
         preferred_data_types = _preferred_data_types(intents, scope)
-
-        return QueryAnalysis(
+        result = QueryAnalysis(
             query=text,
             intents=intents,
             intent=_primary_intent(intents),
@@ -172,6 +177,22 @@ class RuleBasedQueryAnalyzer:
             event_types=event_types,
             preferred_data_types=preferred_data_types,
         )
+        logger.info(
+            "Rules query analysis completed | %s | elapsed_ms=%d",
+            _analysis_log_context(text, "rules"),
+            int((time.perf_counter() - start) * 1000),
+        )
+        return result
+
+
+def _analysis_log_context(query: str, mode: str, model: Any = None) -> dict[str, Any]:
+    context: dict[str, Any] = {
+        "mode": mode,
+        "query_chars": len(str(query or "").strip()),
+    }
+    if model is not None:
+        context["model"] = model if isinstance(model, str) else type(model).__name__
+    return context
 
 
 LLM_ANALYSIS_PROMPT = """\
@@ -207,6 +228,9 @@ class LLMQueryAnalyzer:
 
     def analyze(self, query: str) -> QueryAnalysis:
         text = str(query or "").strip()
+        log_context = _analysis_log_context(text, "llm", self.model)
+        start = time.perf_counter()
+        logger.info("LLM query analysis started | %s", log_context)
         fallback_analysis = self.fallback.analyze(text)
         try:
             structured_llm = self._get_llm().with_structured_output(QueryAnalysis)
@@ -216,9 +240,20 @@ class LLMQueryAnalyzer:
                 if isinstance(result, QueryAnalysis)
                 else QueryAnalysis.model_validate(result)
             )
-            return _normalize_analysis(analysis, text)
+            normalized = _normalize_analysis(analysis, text)
+            logger.info(
+                "LLM query analysis completed | %s | elapsed_ms=%d",
+                log_context,
+                int((time.perf_counter() - start) * 1000),
+            )
+            return normalized
         except Exception as exc:
-            logger.warning("LLM query analysis failed; using rules fallback: %s", exc)
+            logger.warning(
+                "LLM query analysis failed; using rules fallback | %s | fallback_reason=%s | elapsed_ms=%d",
+                log_context,
+                type(exc).__name__,
+                int((time.perf_counter() - start) * 1000),
+            )
             return fallback_analysis
 
     def _get_llm(self) -> Any:
@@ -258,13 +293,28 @@ class HybridQueryAnalyzer:
         )
 
     def analyze(self, query: str) -> QueryAnalysis:
+        text = str(query or "").strip()
+        log_context = _analysis_log_context(text, "hybrid", getattr(self.llm_analyzer, "model", None))
+        start = time.perf_counter()
+        logger.info("Hybrid query analysis started | %s", log_context)
         rules = self.rules_analyzer.analyze(query)
         try:
             llm = self.llm_analyzer.analyze(query)
         except Exception as exc:
-            logger.warning("Hybrid LLM query analysis failed; using rules: %s", exc)
+            logger.warning(
+                "Hybrid query analysis fallback to rules | %s | fallback_reason=%s | elapsed_ms=%d",
+                log_context,
+                type(exc).__name__,
+                int((time.perf_counter() - start) * 1000),
+            )
             return rules
-        return merge_analysis(rules, llm)
+        merged = merge_analysis(rules, llm)
+        logger.info(
+            "Hybrid query analysis completed | %s | elapsed_ms=%d",
+            log_context,
+            int((time.perf_counter() - start) * 1000),
+        )
+        return merged
 
 
 def merge_analysis(

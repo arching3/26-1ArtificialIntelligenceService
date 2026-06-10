@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Literal
 
 from pydantic import BaseModel, Field
 
 from .query_analysis import QueryAnalysis
+
+
+logger = logging.getLogger(__name__)
 
 
 IndexType = Literal["regular", "event"]
@@ -47,6 +51,12 @@ def plan_retrieval(
 ) -> RetrievalPlan:
     """Convert query analysis into storage and index retrieval choices."""
     intents = set(analysis.intents)
+    logger.info(
+        "retrieval_planner_start intents=%s scope=%s final_count=%s",
+        sorted(intents),
+        analysis.scope,
+        final_count,
+    )
     use_financial_sql = bool(
         (intents & {"financial_numeric", "comparison"} or analysis.metrics)
         and analysis.scope not in {"segment", "product", "region"}
@@ -76,7 +86,7 @@ def plan_retrieval(
         "risk_analysis",
     } else 2
 
-    return RetrievalPlan(
+    plan = RetrievalPlan(
         use_sql=use_sql,
         use_financial_sql=use_financial_sql,
         use_event_sql=use_event_sql,
@@ -85,3 +95,18 @@ def plan_retrieval(
         candidate_count=final_count * multiplier,
         final_count=final_count,
     )
+    logger.info(
+        "retrieval_planner_complete intents=%s scope=%s use_sql=%s "
+        "use_financial_sql=%s use_event_sql=%s index_types=%s "
+        "preferred_data_types=%s candidate_count=%s final_count=%s",
+        sorted(intents),
+        analysis.scope,
+        plan.use_sql,
+        plan.use_financial_sql,
+        plan.use_event_sql,
+        plan.index_types,
+        plan.preferred_data_types,
+        plan.candidate_count,
+        plan.final_count,
+    )
+    return plan

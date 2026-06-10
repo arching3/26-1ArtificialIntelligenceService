@@ -190,8 +190,11 @@ def retrieve_context_documents(
                 missing_indexes.append(f"No active chunks: {stock_code}/{index_type}")
                 logger.warning("retrieve_missing_active_chunks stock_code=%s index_type=%s", stock_code, index_type)
                 continue
+            search_started = time.perf_counter()
+            search_count = 0
             try:
                 for chunk_id in search_chunk_ids(stock_code, index_type, query, k=search_k):
+                    search_count += 1
                     if chunk_id not in chunk_ids:
                         chunk_ids.append(chunk_id)
             except FileNotFoundError as exc:
@@ -200,10 +203,25 @@ def retrieve_context_documents(
             except Exception:
                 logger.exception("retrieve_search_failed stock_code=%s index_type=%s", stock_code, index_type)
                 raise
+            finally:
+                logger.info(
+                    "index_search_complete stock_code=%s index_type=%s elapsed_ms=%s chunk_count=%s",
+                    stock_code,
+                    index_type,
+                    round((time.perf_counter() - search_started) * 1000, 2),
+                    search_count,
+                )
 
     chunks = get_chunks_by_ids(chunk_ids)
     documents = [_chunk_to_document(chunk) for chunk in chunks]
+    documents_before_sort = len(documents)
     documents = _sort_documents_for_query(documents, query, query_info, k)
+    logger.info(
+        "document_sort_complete intent=%s before=%s after=%s",
+        intent,
+        documents_before_sort,
+        len(documents),
+    )
     logger.info("retrieve_complete intent=%s chunk_ids=%s document_count=%s missing_indexes=%s", intent, len(chunk_ids), len(documents), missing_indexes)
     return {"query_info": query_info, "documents": documents, "missing_indexes": missing_indexes}
 
@@ -216,6 +234,7 @@ def retrieve_context_text(query: str, stock_codes: Optional[Iterable[str]] = Non
 
 
 def answer_question(question: str, stock_codes: list[str]) -> dict[str, Any]:
+    answer_started = time.perf_counter()
     question = str(question or "").strip()
     if not question:
         logger.info("empty_question")
@@ -237,25 +256,49 @@ def answer_question(question: str, stock_codes: list[str]) -> dict[str, Any]:
     routed_codes = query_info.get("stock_codes") or query_info.get("company_codes") or []
     codes = list(dict.fromkeys([*routed_codes, *stock_codes]))
     logger.info("answer_route intent=%s stock_codes=%s", query_info.get("intent"), codes)
+    sql_started = time.perf_counter()
     sql_context = _sql_context(query_info, codes)
+    logger.info(
+        "sql_context_complete intent=%s rows=%s chars=%s elapsed_ms=%s",
+        query_info.get("intent"),
+        sql_context.count("\n\n") + 1 if sql_context else 0,
+        len(sql_context),
+        round((time.perf_counter() - sql_started) * 1000, 2),
+    )
     try:
         retrieved = retrieve_context_documents(question, stock_codes=codes, k=8, query_info=query_info)
     except Exception as exc:
         logger.exception("retrieve_context_failed intent=%s stock_codes=%s", query_info.get("intent"), codes)
         retrieved = {"documents": [], "missing_indexes": [str(exc)]}
     documents = retrieved.get("documents", [])
+    context_started = time.perf_counter()
     context = _join_context(sql_context, documents)
+    logger.info(
+        "context_join_complete intent=%s sql_chars=%s faiss_chars=%s total_chars=%s elapsed_ms=%s",
+        query_info.get("intent"),
+        len(sql_context),
+        sum(len(document.page_content) for document in documents),
+        len(context),
+        round((time.perf_counter() - context_started) * 1000, 2),
+    )
     sources = [_document_source(document) for document in documents]
 
     if context == "검색된 Context가 없습니다.":
         logger.warning("no_context_found intent=%s stock_codes=%s missing_indexes=%s", query_info.get("intent"), codes, retrieved.get("missing_indexes", []))
-        return {
+        result = {
             "answer": "주어진 공시 자료에서는 해당 내용을 찾을 수 없습니다.",
             "sources": sources,
             "query_info": query_info,
             "route": _route_name(query_info),
             "missing_indexes": retrieved.get("missing_indexes", []),
         }
+        logger.info(
+            "answer_complete route=%s source_count=%s elapsed_ms=%s",
+            _route_name(query_info),
+            len(sources),
+            round((time.perf_counter() - answer_started) * 1000, 2),
+        )
+        return result
 
     if os.getenv("OPENAI_API_KEY"):
         try:
@@ -266,7 +309,12 @@ def answer_question(question: str, stock_codes: list[str]) -> dict[str, Any]:
     else:
         logger.warning("openai_api_key_missing_using_extractive_answer")
         answer = _extractive_answer(question, context, query_info)
-    logger.info("answer_complete route=%s source_count=%s", _route_name(query_info), len(sources))
+    logger.info(
+        "answer_complete route=%s source_count=%s elapsed_ms=%s",
+        _route_name(query_info),
+        len(sources),
+        round((time.perf_counter() - answer_started) * 1000, 2),
+    )
     return {
         "answer": answer,
         "sources": sources,
